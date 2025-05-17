@@ -1,0 +1,134 @@
+<ShowMessage_Info@Popup>:
+    auto_dismiss: False
+    message_text: ''
+    size_hint: None, None
+    size: 300, 150
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: 5
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: None
+            width: 40
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                BoxLayout:
+                    size_hint: None, None
+                    size: 40,40
+                    canvas.before:
+                        Color:
+                            rgba: (1, 1, 1, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [40]
+                    AnchorLayout:
+                        anchor_x: 'center'
+                        anchor_y: 'center'
+                        Image:
+                            source: ("./assets/popup/info-solid.png")
+                            size_hint: None, None
+                            size: 30,30
+        BoxLayout:
+            orientation: 'vertical'
+            BoxLayout:
+                orientation: 'vertical'
+                AnchorLayout:
+                    anchor_x: 'center'
+                    anchor_y: 'center'
+                    Label:
+                        text: root.message_text
+                        text_size: self.size
+                        halign: 'left'
+                        valign: 'middle'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 23
+                AnchorLayout:
+                    anchor_x: 'right'
+                    Button:
+                        size_hint: None, None
+                        size: 70, 23
+                        text: 'Close'
+                        color: (0,0,0,1)
+                        font_size: sp(12)
+                        background_normal: ''
+                        background_color: (0.6471, 0.7882, 0.7882)
+                        on_release: root.dismiss()
+
+<ShowMessage_Ask@Popup>:
+    auto_dismiss: False
+    message_text: ''
+    size_hint: None, None
+    size: 300, 150
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: 5
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: None
+            width: 40
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                BoxLayout:
+                    size_hint: None, None
+                    size: 40,40
+                    canvas.before:
+                        Color:
+                            rgba: (1, 1, 1, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [40]
+                    AnchorLayout:
+                        anchor_x: 'center'
+                        anchor_y: 'center'
+                        Image:
+                            source: ("./assets/popup/question-solid.png")
+                            size_hint: None, None
+                            size: 30,30
+        BoxLayout:
+            orientation: 'vertical'
+            BoxLayout:
+                orientation: 'vertical'
+                AnchorLayout:
+                    anchor_x: 'center'
+                    anchor_y: 'center'
+                    Label:
+                        text: root.message_text
+                        text_size: self.size
+                        halign: 'left'
+                        valign: 'middle'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 23
+                AnchorLayout:
+                    anchor_x: 'right'
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        spacing: 4
+                        size_hint_x: None
+                        width: 104
+                        Button:
+                            size_hint: None, None
+                            size: 50, 23
+                            text: 'Yes'
+                            color: (0,0,0,1)
+                            font_size: sp(12)
+                            background_normal: ''
+                            background_color: (0.6471, 0.7882, 0.7882)
+                            on_release: root.dismiss()
+
+                        Button:
+                            size_hint: None, None
+                            size: 50, 23
+                            text: 'No'
+                            color: (0,0,0,1)
+                            font_size: sp(12)
+                            background_normal: ''
+                            background_color: (0.6471, 0.7882, 0.7882)
+                            on_release: root.dismiss()

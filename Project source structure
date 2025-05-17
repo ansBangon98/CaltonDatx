@@ -1,0 +1,72 @@
+PeopleAnalyticsApp/
+├── main.py                       # Entry point
+├── requirements.txt
+├── buildozer.spec                # For Android build
+├── README.md
+├── LICENSE
+
+├── app/                          # Core app logic
+│   ├── __init__.py
+│   ├── config.py                 # App-wide config settings
+│   ├── controller.py             # Main app controller logic
+│   ├── camera_manager.py         # Handles webcam or mobile camera input
+│   └── router.py                 # Navigation between screens (if needed)
+
+├── ui/                           # UI logic and layouts
+│   ├── screens/
+│   │   ├── dashboard.py
+│   │   ├── settings.py
+│   │   └── ...
+│   ├── kv/                       # .kv layout files
+│   │   ├── dashboard.kv
+│   │   └── ...
+│   └── widgets/                  # Custom widgets
+│       └── button.py
+
+├── models/                       # Pretrained ML/DL models
+│   ├── gender_model.tflite
+│   ├── age_model.pt
+│   └── emotion_model.pb
+
+├── vision/                       # Computer vision processing
+│   ├── __init__.py
+│   ├── face_detection.py
+│   ├── people_counting.py
+│   ├── vehicle_detection.py
+│   └── analytics_engine.py       # Combines CV outputs into usable analytics
+
+├── platform/                     # Platform-specific handling
+│   ├── android/
+│   │   └── permissions.py
+│   └── windows/
+│       └── utils.py
+
+├── assets/                       # Static resources (images, fonts, etc.)
+│   ├── icons/
+│   └── demo_videos/
+
+├── data/                         # Configuration files, logs, or sample data
+│   ├── config.json
+│   ├── logs/
+│   └── test_inputs/
+
+├── tools/                        # Developer tools and scripts
+│   ├── convert_model.py          # Script to convert models to TFLite, ONNX, etc.
+│   └── evaluate_model.py
+
+└── tests/                        # Unit or integration tests
+    ├── test_face_detection.py
+    └── test_model_accuracy.py
+
+
+
+🔍 Breakdown by Function
+Folder/File	Purpose
+models/	Stores trained models in appropriate formats (e.g., .tflite, .pt)
+vision/	Handles all computer vision logic (OpenCV, Mediapipe, etc.)
+ui/	User interface, screens, and layouts (.kv files)
+app/	Core logic for camera, app flow, and data processing
+platform/	Platform-specific code for Android and Windows
+data/	Logs, configuration files, and sample test input/output
+tools/	Utilities like model conversion, benchmarking, etc.
+tests/	Organized tests for vision and model components

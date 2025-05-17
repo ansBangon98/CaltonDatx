@@ -1,0 +1,3 @@
+pyinstaller index.py --name "CaltonDatx(people)-windroid" --onedir --icon=calton.ico --add-data "View/deviceconfig.kv;View" --add-data "util/tools;util/tools"
+
+pyinstaller CaltonDatx(people)-windroid.spec
