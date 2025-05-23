@@ -1,2 +1,9 @@
 pyinstaller
 kivy
+opencv-python
+pycryptodome
+#onnxruntime # uninstalled 
+matplotlib
+scikit-image
+filterpy
+tensorflow

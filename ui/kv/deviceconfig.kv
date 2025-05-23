@@ -1,3 +1,8 @@
+<ImageButton>:
+    fit_mode: 'contain'
+    size_hint: None, None
+    size: 40, 40
+
 <AutoResizeLabel@Label>:
     color: (0, 0, 0, 1)
     size_hint: None, None
@@ -190,12 +195,28 @@
                     orientation: 'horizontal'
                     padding: 5, 0, 5, 5
                     BoxLayout:
-                        canvas.before:
-                            Color:
-                                rgba: (0.3098, 0.2745, 0.2745, 1)
-                            Rectangle:
-                                pos: self.pos
-                                size: self.size
+                        orientation: 'vertical'
+                        BoxLayout:
+                            canvas.before:
+                                Color:
+                                    rgba: (0.3098, 0.2745, 0.2745, 1)
+                                Rectangle:
+                                    pos: self.pos
+                                    size: self.size
+                            Image:
+                                id: img_camera
+                                fit_mode: 'contain'
+                                size: self.parent.size
+                                # source: ("./assets/deviceconfig/cam_bg.png")
+                            
+                        FloatLayout:
+                            size_hint: None, None
+                            size:0,0
+                            ImageButton:
+                                id: imgbtn_capture
+                                pos: self.parent.parent.width-32, self.parent.top+2
+                                # pos: self.parent.width - 10, 10
+                                source: ("./assets/deviceconfig/capture.png")
                     BoxLayout:
                         orientation: 'vertical'
                         size_hint_x: None
@@ -846,7 +867,7 @@
                                 size_hint: None, None
                                 size: 90, 25
                                 pos: self.parent.x, self.parent.y+5
-                                on_press: root._on_click_start()
+                                on_press: root._on_click_start(self)
                             
                             Button:
                                 id: btn_close
