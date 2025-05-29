@@ -3,3 +3,5 @@ appcont = None
 models = None
 camera = None
 detection = None
+gender = None
+logs = None

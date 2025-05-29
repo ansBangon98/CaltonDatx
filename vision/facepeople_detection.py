@@ -133,9 +133,10 @@ class Detection():
         
         bbox = self.__post_processing(output_data)
         face_bbox, people_bbox = self.__get_bounding_box(bbox, fw, fh)
-
+        
+        detection_coords = {}
         if 'Face' in self.appcont._detection and 'Body' in self.appcont._detection:
-            detection_coords = {}
+            
             if people_bbox:
                 trk = self.tracker.update(np.array(people_bbox))
                 for coords_trk in trk:
@@ -155,20 +156,21 @@ class Detection():
                             'body_coords': [bx1, by1, bx2, by2],
                             'face_coords': [None, None, None, None]
                         }
-            for id, item in detection_coords.items():
-                bx1, by1, bx2, by2 = item['body_coords']
-                self.__create_body_box(frame, bx1, by1, bx2, by2)  # Body bounding box
-                if item['face_coords'] == [None, None, None, None]:
-                    pass
-                    # self._captured_data(id, 'OTS')
-                    # self.__OTS_caption_display(bx1, by1, id, frame)
-                else:
-                    fx1, fy1, fx2, fy2 = item['face_coords']
-                    # self.__analytic_captured_data(id, fx1, fy1, fx2, fy2, fh, fw)
-                    # self.__display_predictions(bx1, by1, bx2, by2, id, frame)
-                    self.__create_face_box(frame, fx1, fy1, fx2, fy2)  # Face bounding box
+            # for id, item in detection_coords.items():
+            #     bx1, by1, bx2, by2 = item['body_coords']
+            #     self.__create_body_box(frame, bx1, by1, bx2, by2)  # Body bounding box
+            #     if item['face_coords'] == [None, None, None, None]:
+            #         pass
+            #         # self._captured_data(id, 'OTS')
+            #         # self.__OTS_caption_display(bx1, by1, id, frame)
+            #     else:
+            #         fx1, fy1, fx2, fy2 = item['face_coords']
+            #         # self.__analytic_captured_data(id, fx1, fy1, fx2, fy2, fh, fw)
+            #         # self.__display_predictions(bx1, by1, bx2, by2, id, frame)
+            #         self.__create_face_box(frame, fx1, fy1, fx2, fy2)  # Face bounding box
         
-        return frame
+        # return frame
+        return detection_coords
     
     def __create_face_box(self, frame, x1, y1, x2, y2):
 

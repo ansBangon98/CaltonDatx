@@ -1,0 +1,12 @@
+[Website]
+main_website=https://analytics.caltondatx.com
+[APIs]
+api_server=https://api.caltondatx.com
+people=/api/v1/people-recorder
+device=/api/v1/device
+image_get=/api/v1/device/is-camera-capture-enabled/
+image_post=/api/v1/device/camera-capture/
+batch=/api/v1/people-recorder/batch
+vcastplay=http://localhost:5000/api/person-detections
+[KEYs]
+key=nyxsys@2024@f97lou447rysj65uyt0dnuh8
