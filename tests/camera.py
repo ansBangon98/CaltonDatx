@@ -15,8 +15,9 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from vision.load_models import Models
-from vision.facepeople_detection import Detection
-from vision.gender import Gender
+from vision.detections import Detection
+from vision.predictions import Gender, Age, Emotion
+from vision.displays import Caption, Track
 from app.controller import AppController
 
 import core.state as state
@@ -28,6 +29,11 @@ class KivyCam(BoxLayout):
         state.models = Models()
         state.detection = Detection()
         state.gender = Gender()
+        state.age = Age()
+        state.emotion = Emotion()
+
+        state.caption = Caption()
+        state.track = Track()
 
         # Image widget to display video frames
         self.image = Image()
@@ -53,6 +59,7 @@ class KivyCam(BoxLayout):
         self.fps_start = time.time()
 
         self.detection = None
+        self.prediction = {}
         self.frame = None
 
         threading.Thread(target=self.get_detection).start()
@@ -62,16 +69,29 @@ class KivyCam(BoxLayout):
             if self.frame is not None:
                 self.detection = state.detection._get_detection(self.frame)
                 if self.detection:
-                    face_box =  {id:item['face_coords'] for id, item in self.detection.items() if item['face_coords'] != [None, None, None, None]}
+                    face_box =  {id:item for id, item in self.detection.items() if item['face_coords'] != [None, None, None, None]}
                     for id, item in face_box.items():
-                        x1, y1, x2, y2 = item
-                        face = self.frame[y1:y2, x1:x2]
-                        gender = state.gender._predic_gender(face)
-                        print(gender)
-                        stoper = ''
-            # time.sleep(5 / 1000)
+                        fx1, fy1, fx2, fy2 = item['face_coords']
+                        # bx1, by1, bx2, by2 = item['body_coords']
+                        height, width, _ = self.frame.shape
+                        fx1 = max(0, fx1)
+                        fy1 = max(0, fy1)
+                        fx2 = min(width, fx2)
+                        fy2 = min(height, fy2)
+                        face = self.frame[fy1:fy2, fx1:fx2]
+                        age = state.age._predic_age(face, id)
+                        gender = state.gender._predic_gender(face, id)
+                        emotion = state.emotion._predic_emotion(face, id)
+
+                        self.prediction[id] = {
+                            'gender': gender if gender is not None else self.prediction[id]['gender'] if id in self.prediction else '',
+                            'age': age if age is not None else self.prediction[id]['age'] if id in self.prediction else '',
+                            'emotion': emotion if emotion is not None else self.prediction[id]['emotion'] if id in self.prediction else ''
+                        }
 
     def start_camera(self, *args):
+        self.fps_count = 0
+        self.fps_start = time.time()
         if self.capture is None:
             self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
             self.event = Clock.schedule_interval(self.update, 1.0 / 30)
@@ -82,60 +102,40 @@ class KivyCam(BoxLayout):
             self.capture.release()
             self.capture = None
             self.image.texture = None  # Clear the image
-    
-    def __create_body_box(self, frame, x1, y1, x2, y2):
-        rectangle_color = (255, 0, 255)
-        line_color = (0, 255, 0)
-        line_width = 10
-        line_tickness = 2
-        
-        cv2.rectangle(frame, (x1, y1), (x2, y2), rectangle_color, 1)
-
-        cv2.line(frame, (x1, y1), (x1 + line_width, y1), line_color, thickness=line_tickness)  # Left-Top Line
-        cv2.line(frame, (x1, y1), (x1, y1 + line_width), line_color, thickness=line_tickness)  # Lef-Side
-
-        cv2.line(frame, (x2, y1), (x2 - line_width, y1), line_color, thickness=line_tickness)  # Right-Top Line
-        cv2.line(frame, (x2, y1), (x2, y1 + line_width), line_color, thickness=line_tickness)  # Lef-Side
-
-        cv2.line(frame, (x1, y2), (x1 + line_width, y2), line_color, thickness=line_tickness)  # Left-Boto Line
-        cv2.line(frame, (x1, y2), (x1, y2 - line_width), line_color, thickness=line_tickness)  # Lef-Side
-
-        cv2.line(frame, (x2, y2), (x2 - line_width, y2), line_color, thickness=line_tickness)  # Right-Top Line
-        cv2.line(frame, (x2, y2), (x2, y2 - line_width), line_color, thickness=line_tickness)  # Lef-Side
-
-    def __create_face_box(self, frame, x1, y1, x2, y2):
-        thick = 2
-        thick_width = 15
-        line_color = (0, 255, 0)
-
-        cv2.line(frame, (x1, y1), (x1 + thick_width, y1), line_color, thick)  # Left-Top Line
-        cv2.line(frame, (x1, y1), (x1, y1 + thick_width), line_color, thick)  # Left-Side
-
-        cv2.line(frame, (x2, y1), (x2 - thick_width, y1), line_color, thick)  # Right-Top Line
-        cv2.line(frame, (x2, y1), (x2, y1 + thick_width), line_color, thick)  # Right-Side
-
-        cv2.line(frame, (x1, y2), (x1 + thick_width, y2), line_color, thick)  # Left-Boto Line
-        cv2.line(frame, (x1, y2), (x1, y2 - thick_width), line_color, thick)  # Left-Side
-
-        cv2.line(frame, (x2, y2), (x2 - thick_width, y2), line_color, thick)  # Right-Top Line
-        cv2.line(frame, (x2, y2), (x2, y2 - thick_width), line_color, thick)  # Right-Side
 
     def update(self, dt):
         if self.capture and self.capture.isOpened():
             ret, frame = self.capture.read()
             if ret:
-                # Convert image to texture
                 self.frame = frame.copy()
-
                 if self.detection is not None:
                     for id, item in self.detection.items():
-                        bx1, by1, bx2, by2 = item['body_coords']
-                        self.__create_body_box(frame, bx1, by1, bx2, by2)  # Body bounding box
-                        if item['face_coords'] == [None, None, None, None]:
-                            pass
-                        else:
-                            fx1, fy1, fx2, fy2 = item['face_coords']
-                            self.__create_face_box(frame, fx1, fy1, fx2, fy2)  # Face bounding box
+                        prediction = None
+                        if id in self.prediction:
+                            prediction = self.prediction[id]
+                        if prediction is not None:
+                            gender = prediction['gender']
+                            age = prediction['age']
+                            emotion = prediction['emotion']
+
+                        if item['face_coords'] != [None, None, None, None]:
+                            x1, y1, x2, y2 = item['face_coords']
+                            frame = state.track._create_face_box(frame, x1, y1, x2, y2)
+                            if item['body_coords'] == [None, None, None, None]:
+                                if prediction is not None:
+                                    if gender != '':
+                                        frame = state.caption._display_caption(age, x2, y1, frame)
+                                        frame = state.caption._display_caption(gender, x2, y1+30, frame)
+
+                        if item['body_coords'] != [None, None, None, None]:
+                            x1, y1, x2, y2 = item['body_coords']
+                            frame = state.track._create_body_box(frame, x1, y1, x2, y2)
+                            if item['face_coords'] != [None, None, None, None]:
+                                if prediction is not None:
+                                    if gender != '':
+                                        frame = state.caption._display_caption(age, x1, y1, frame)
+                                        frame = state.caption._display_caption(gender, x1, y1+30, frame)
+                                        frame = state.caption._display_caption(emotion, x1, y1+60, frame)
 
                 fps_end_time = time.time()
                 fps = self.fps_count / (fps_end_time - self.fps_start)

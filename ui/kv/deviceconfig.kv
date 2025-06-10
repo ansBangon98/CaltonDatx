@@ -334,7 +334,6 @@
                                                 size_hint_y: None
                                                 height: 40
                                                 group: "cam_ref"
-                                                on_press: root._on_press_cam_ref()
                                             Widget:
                                         BoxLayout:
                                             orientation: 'vertical'
@@ -620,6 +619,7 @@
                                         if self.collide_point(*args[1].pos): ckbx_autostart.active = not ckbx_autostart.active
                                 CustomCheckBox:
                                     id: ckbx_autostart
+                                    active: True
                                     pos: self.parent.x+85, self.parent.top-41
                                 AutoResizeLabel:
                                     text: 'Status'
@@ -648,7 +648,9 @@
                                     FloatLayout:
                                         CustomCheckBox:
                                             id: ckbx_body
+                                            active: True
                                             pos: self.parent.x+10, self.parent.top-15
+                                            on_active: root._ckbx_body_check_changed()
                                         AutoResizeLabel:
                                             text: 'Body'
                                             font_size: 13
@@ -657,7 +659,9 @@
                                                 if self.collide_point(*args[1].pos): ckbx_body.active = not ckbx_body.active
                                         CustomCheckBox:
                                             id: ckbx_face
+                                            active: True
                                             pos: self.parent.x+10, self.parent.top-40
+                                            on_active: root._ckbx_face_check_changed()
                                         AutoResizeLabel:
                                             text: 'Face'
                                             font_size: 13
@@ -675,6 +679,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_gender
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-15
                                             AutoResizeLabel:
                                                 text: 'Gender'
@@ -696,6 +701,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_age
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-15
                                             AutoResizeLabel:
                                                 text: 'Age'
@@ -717,6 +723,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_emotion
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-15
                                             AutoResizeLabel:
                                                 text: 'Emotion'
@@ -743,6 +750,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_child
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-12
                                             AutoResizeLabel:
                                                 text: 'Child (3-12)'
@@ -758,6 +766,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_teen
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-10
                                             AutoResizeLabel:
                                                 text: 'Teen (13-19)'
@@ -773,6 +782,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_young_adult
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-10
                                             AutoResizeLabel:
                                                 text: 'Young Adult (20-29)'
@@ -788,6 +798,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_adult
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-10
                                             AutoResizeLabel:
                                                 text: 'Adult (30-39)'
@@ -803,6 +814,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_middleaged
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-10
                                             AutoResizeLabel:
                                                 text: 'Middle-Aged (40-59)'
@@ -818,6 +830,7 @@
                                             pos: self.parent.pos
                                             CustomCheckBox:
                                                 id: ckbx_senior
+                                                active: True
                                                 pos: self.parent.x+10, self.parent.top-10
                                             AutoResizeLabel:
                                                 text: 'Senior (60+)'
@@ -846,6 +859,7 @@
                         FloatLayout:
                             CustomCheckBox:
                                 id : ckbx_save_configuration
+                                active: True
                                 pos: self.parent.x+8, self.parent.top-25
                             AutoResizeLabel:
                                 text: 'Save this configuration'
@@ -867,7 +881,7 @@
                                 size_hint: None, None
                                 size: 90, 25
                                 pos: self.parent.x, self.parent.y+5
-                                on_press: root._on_click_start(self)
+                                on_press: root._on_click_start()
                             
                             Button:
                                 id: btn_close
