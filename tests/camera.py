@@ -18,6 +18,7 @@ from vision.load_models import Models
 from vision.detections import Detection
 from vision.predictions import Gender, Age, Emotion
 from vision.displays import Caption, Track
+from kivy.uix.camera import Camera
 from app.controller import AppController
 
 import core.state as state
@@ -36,7 +37,11 @@ class KivyCam(BoxLayout):
         state.track = Track()
 
         # Image widget to display video frames
+        resolution=(640, 480)
+        self.camera = Camera(play=False)
+        self.camera.play = False
         self.image = Image()
+        # self.add_widget(self.camera)
         self.add_widget(self.image)
 
         # Start/Stop buttons
@@ -52,7 +57,7 @@ class KivyCam(BoxLayout):
         self.stop_btn.bind(on_press=self.stop_camera)
 
         # Camera attributes
-        self.capture = None
+        # self.capture = None
         self.event = None
 
         self.fps_count = 0
@@ -92,50 +97,63 @@ class KivyCam(BoxLayout):
     def start_camera(self, *args):
         self.fps_count = 0
         self.fps_start = time.time()
-        if self.capture is None:
-            self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-            self.event = Clock.schedule_interval(self.update, 1.0 / 30)
+        self.camera.play = True
+        self.event = Clock.schedule_interval(self.update, 1.0 / 30)
+        
+        # if self.capture is None:
+        #     self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        #     self.event = Clock.schedule_interval(self.update, 1.0 / 30)
 
     def stop_camera(self, *args):
-        if self.capture:
+        # if self.capture:
+        if self.camera.texture:
+            self.camera.play = False
             self.event.cancel()
-            self.capture.release()
-            self.capture = None
+            # self.capture.release()
+            # self.capture = None
             self.image.texture = None  # Clear the image
 
     def update(self, dt):
-        if self.capture and self.capture.isOpened():
-            ret, frame = self.capture.read()
-            if ret:
-                self.frame = frame.copy()
-                if self.detection is not None:
-                    for id, item in self.detection.items():
-                        prediction = None
-                        if id in self.prediction:
-                            prediction = self.prediction[id]
-                        if prediction is not None:
-                            gender = prediction['gender']
-                            age = prediction['age']
-                            emotion = prediction['emotion']
+        if self.camera.texture:
+            texture = self.camera.texture
+            size = texture.size
+            pixels = texture.pixels
 
+            frame = np.frombuffer(pixels, dtype=np.uint8)
+            frame = frame.reshape((size[1], size[0], 4))
+            frame = frame[:, :, :3].copy()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            
+            self.frame = frame.copy()
+            if self.detection is not None:
+                for id, item in self.detection.items():
+                    prediction = None
+                    if id in self.prediction:
+                        prediction = self.prediction[id]
+                    if prediction is not None:
+                        gender = prediction['gender']
+                        age = prediction['age']
+                        emotion = prediction['emotion']
+
+                    if item['face_coords'] != [None, None, None, None]:
+                        x1, y1, x2, y2 = item['face_coords']
+                        frame = state.track._create_face_box(frame, x1, y1, x2, y2)
+                        if item['body_coords'] == [None, None, None, None]:
+                            if prediction is not None:
+                                if gender != '':
+                                    frame = state.caption._display_caption(age, x2, y1, frame)
+                                    frame = state.caption._display_caption(gender, x2, y1+30, frame)
+
+                    if item['body_coords'] != [None, None, None, None]:
+                        x1, y1, x2, y2 = item['body_coords']
+                        frame = state.track._create_body_box(frame, x1, y1, x2, y2)
                         if item['face_coords'] != [None, None, None, None]:
-                            x1, y1, x2, y2 = item['face_coords']
-                            frame = state.track._create_face_box(frame, x1, y1, x2, y2)
-                            if item['body_coords'] == [None, None, None, None]:
-                                if prediction is not None:
-                                    if gender != '':
-                                        frame = state.caption._display_caption(age, x2, y1, frame)
-                                        frame = state.caption._display_caption(gender, x2, y1+30, frame)
-
-                        if item['body_coords'] != [None, None, None, None]:
-                            x1, y1, x2, y2 = item['body_coords']
-                            frame = state.track._create_body_box(frame, x1, y1, x2, y2)
-                            if item['face_coords'] != [None, None, None, None]:
-                                if prediction is not None:
-                                    if gender != '':
-                                        frame = state.caption._display_caption(age, x1, y1, frame)
-                                        frame = state.caption._display_caption(gender, x1, y1+30, frame)
-                                        frame = state.caption._display_caption(emotion, x1, y1+60, frame)
+                            if prediction is not None:
+                                if gender != '':
+                                    frame = state.caption._display_caption(age, x1, y1, frame)
+                                    frame = state.caption._display_caption(gender, x1, y1+30, frame)
+                                    frame = state.caption._display_caption(emotion, x1, y1+60, frame)
 
                 fps_end_time = time.time()
                 fps = self.fps_count / (fps_end_time - self.fps_start)

@@ -8,9 +8,15 @@ from tools.tracker import Sort
 class Detection():
     def __init__(self):
         self.models = state.models
+
+        self.interpreter = state.models.facpep_interpreter
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+
         self.tracker = Sort(max_age=20, min_hits=3, iou_threshold=0.3)
 
         self._detection = ['Face', 'Body']
+        # self._detection = ['Face']
     
     def __nms_cpu(self, boxes, confs, nms_thresh=0.5, min_mode=False):
         x1 = boxes[:, 0]
@@ -117,11 +123,11 @@ class Detection():
         blob = resize_frame.transpose(2, 0, 1)
         blob = np.expand_dims(blob, axis=0).astype(np.float32) / 255.0
 
-        interpreter = self.models.facpep_interpreter
-        input_index = self.models.facpep_input_details[0]['index']
-        interpreter.set_tensor(input_index, blob)
-        interpreter.invoke()
-        output_data = [interpreter.get_tensor(output['index']) for output in self.models.facpep_output_details]
+        # interpreter = self.models.facpep_interpreter
+        # input_index = self.models.facpep_input_details[0]['index']
+        self.interpreter.set_tensor(self.input_details[0]['index'], blob)
+        self.interpreter.invoke()
+        output_data = [self.interpreter.get_tensor(output['index']) for output in self.output_details]
         bbox = self.__post_processing(output_data)
         face_bbox, people_bbox = self.__get_bounding_box(bbox, fw, fh)
 
@@ -145,34 +151,35 @@ class Detection():
             face_coords_list.append(f"{x1}{y1}{x2}{y2}")
 
         bounding_box = face_bbox+people_bbox if is_has_face_body else face_bbox if 'Face' in self._detection else people_bbox
-
-        trk = self.tracker.update(np.array(bounding_box))
-        for coords_trk in trk:
-            x1, y1, x2, y2, id = map(int, coords_trk)
-            ishasbody = False
-            if is_has_face_body:
-                for i in range(len(face_with_body)):
-                    fx1, fy1, fx2, fy2 = face_with_body[i]
-                    if fx1 > x1 and fx2 < x2 and fy1 > y1 and fy2 < y2:
+        
+        if bounding_box:
+            trk = self.tracker.update(np.array(bounding_box))
+            for coords_trk in trk:
+                x1, y1, x2, y2, id = map(int, coords_trk)
+                ishasbody = False
+                if is_has_face_body:
+                    for i in range(len(face_with_body)):
+                        fx1, fy1, fx2, fy2 = face_with_body[i]
+                        if fx1 > x1 and fx2 < x2 and fy1 > y1 and fy2 < y2:
+                            detection_coords[id] = {
+                                'body_coords': [x1, y1, x2, y2],
+                                'face_coords': [fx1, fy1, fx2, fy2]
+                                }
+                            ishasbody = True
+                            del face_with_body[i]
+                            break
+                if not ishasbody:
+                    coords = f"{x1}{y1}{x2}{y2}"
+                    if coords in face_coords_list:
                         detection_coords[id] = {
-                            'body_coords': [x1, y1, x2, y2],
-                            'face_coords': [fx1, fy1, fx2, fy2]
-                            }
-                        ishasbody = True
-                        del face_with_body[i]
-                        break
-            if not ishasbody:
-                coords = f"{x1}{y1}{x2}{y2}"
-                if coords in face_coords_list:
-                    detection_coords[id] = {
-                    'body_coords': [None, None, None, None],
-                    'face_coords': [x1, y1, x2, y2]
-                    }
-                else:
-                    detection_coords[id] = {
-                    'body_coords': [x1, y1, x2, y2],
-                    'face_coords': [None, None, None, None]
-                    }
+                        'body_coords': [None, None, None, None],
+                        'face_coords': [x1, y1, x2, y2]
+                        }
+                    else:
+                        detection_coords[id] = {
+                        'body_coords': [x1, y1, x2, y2],
+                        'face_coords': [None, None, None, None]
+                        }
 
 
         """

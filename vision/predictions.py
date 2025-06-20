@@ -8,7 +8,19 @@ from collections import deque, Counter
 
 from PIL import Image
 
-def _3d_preprocess_image(image_array):
+# def _3d_gender_preprocess_image(image_array):
+#     size = (224, 224)
+#     mean = tf.constant([0.485, 0.456, 0.406])
+#     std = tf.constant([0.229, 0.224, 0.225])
+
+#     img = Image.fromarray(image_array).convert("RGB").resize(size)
+#     img = np.array(img) / 255.0
+#     img = (img - mean.numpy()) / std.numpy()
+#     img = np.expand_dims(img, axis=0).astype(np.uint8)
+#     return img
+
+def _3d_preprocess_image_quantize(image_array, input_scale, input_zero_point):
+    """
     size = (224, 224)
     mean = tf.constant([0.485, 0.456, 0.406])
     std = tf.constant([0.229, 0.224, 0.225])
@@ -16,34 +28,57 @@ def _3d_preprocess_image(image_array):
     img = Image.fromarray(image_array).convert("RGB").resize(size)
     img = np.array(img) / 255.0
     img = (img - mean.numpy()) / std.numpy()
-    img = np.expand_dims(img, axis=0).astype(np.float32)
+    img = np.expand_dims(img, axis=0).astype(np.uint8)
     return img
+    """
+    img = cv2.resize(image_array, (224, 224))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = np.asarray(img, dtype=np.float32)
 
-def _1d_preprocess_image(image_array):
-    size = (48, 48)
-    img = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+    # Normalize to original float32 range [0, 1]
+    img = img / 255.0
+
+    # Quantize to uint8
+    img = img / input_scale + input_zero_point
+    img = np.clip(img, 0, 255).astype(np.uint8)
+
+    return np.expand_dims(img, axis=0)  # shape: (1, 224, 224, 3)
+
+def _3d_preprocess_image(image_array):
+    img = cv2.resize(image_array, (224, 224))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = np.asarray(img, dtype=np.float32)
+    img = img / 255.0
+    return np.expand_dims(img, axis=0)  # shape: (1, 224, 224, 3)
+
+def _1d_preprocess_image(image_array, input_scale, input_zero_point):
+    """
+    img = cv2.resize(image_array, (48, 48), interpolation=cv2.INTER_AREA)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = img.astype(float) / 255.0
     img = img_to_array(img)
-    img = np.expand_dims(img, axis=0)
+    img = np.expand_dims(img, axis=0).astype(np.uint8)
+    return img
+    """
+    img = cv2.resize(image_array, (48, 48), interpolation=cv2.INTER_AREA)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = np.expand_dims(img, axis=-1)  # shape: (48, 48, 1)
+    img = np.expand_dims(img, axis=0)   # shape: (1, 48, 48, 1)
+
+    # Quantize
+    img = img.astype(np.float32) / 255.0  # Normalize to [0, 1]
+    img = img / input_scale + input_zero_point
+    img = np.clip(img, 0, 255).astype(np.uint8)
     return img
 
-    # mean = tf.constant([0.5])
-    # std = tf.constant([0.5])
-
-    # img = Image.fromarray(image_array).convert("L").resize(size)
-    # img = np.array(img) / 255.0
-    # img = (img - mean.numpy()) / std.numpy()
-    # img = np.expand_dims(img, axis=-1)
-    # img = np.expand_dims(img, axis=0)
-
-    # return img.astype(np.float32)
 
 class Age():
     def __init__(self):
         self.interpreter = state.models.age_interpreter
-        self.input = state.models.age_input_details
-        self.output = state.models.age_output_details
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        self.input_scale, self.input_zero_point = self.input_details[0]['quantization']
+        self.output_scale, self.output_zero_point = self.output_details[0]['quantization']
         self.age_list = {}
     
     def __get_age_category(self, age_index):
@@ -63,11 +98,12 @@ class Age():
         return age_classification
 
     def _predic_age(self, face, id):
-        image_tensor = _3d_preprocess_image(face)
-        self.interpreter.set_tensor(self.input[0]['index'], image_tensor)
+        image_tensor = _3d_preprocess_image_quantize(face, self.input_scale, self.input_zero_point)
+        self.interpreter.set_tensor(self.input_details[0]['index'], image_tensor)
         self.interpreter.invoke()
-        output = self.interpreter.get_tensor(self.output[0]['index'])
-        probabilities = tf.nn.softmax(output[0]).numpy()
+        output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
+        output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
+        probabilities = tf.nn.softmax(output_float[0]).numpy()
         pred_class = np.argmax(probabilities)
         conf = probabilities[pred_class]
         if conf >= 0.5:
@@ -83,17 +119,22 @@ class Age():
 class Gender():
     def __init__(self):
         self.interpreter = state.models.gender_interpreter
-        self.input = state.models.gender_input_details
-        self.output = state.models.gender_output_details
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        self.input_scale, self.input_zero_point = self.input_details[0]['quantization']
+        self.output_scale, self.output_zero_point = self.output_details[0]['quantization']
         self.gender_list = {}
     
-
     def _predic_gender(self, face, id):
         image_tensor = _3d_preprocess_image(face)
-        self.interpreter.set_tensor(self.input[0]['index'], image_tensor)
+        # image_tensor = _3d_preprocess_image_quantize(face, self.input_scale, self.input_zero_point)
+        # print(image_tensor.shape)
+        self.interpreter.set_tensor(self.input_details[0]['index'], image_tensor)
         self.interpreter.invoke()
-        output = self.interpreter.get_tensor(self.output[0]['index'])
-        probabilities = tf.nn.softmax(output[0]).numpy()
+        output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
+        # output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
+        # probabilities = tf.nn.softmax(output_float[0]).numpy()
+        probabilities = tf.nn.softmax(output_data[0]).numpy()
         pred_class = np.argmax(probabilities)
         conf = probabilities[pred_class]
         if conf >= 0.5:
@@ -109,16 +150,19 @@ class Gender():
 class Emotion():
     def __init__(self):
         self.interpreter = state.models.emotion_interpreter
-        self.input = state.models.emotion_input_details
-        self.output = state.models.emotion_output_details
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        self.input_scale, self.input_zero_point = self.input_details[0]['quantization']
+        self.output_scale, self.output_zero_point = self.output_details[0]['quantization']
         self.emotions = ['Angry', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
     def _predic_emotion(self, face, id):
-        image_tensor = _1d_preprocess_image(face)
-        self.interpreter.set_tensor(self.input[0]['index'], image_tensor)
+        image_tensor = _1d_preprocess_image(face, self.input_scale, self.input_zero_point)
+        self.interpreter.set_tensor(self.input_details[0]['index'], image_tensor)
         self.interpreter.invoke()
-        output = self.interpreter.get_tensor(self.output[0]['index'])
-        probabilities = tf.nn.softmax(output[0]).numpy()
+        output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
+        output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
+        probabilities = tf.nn.softmax(output_float[0]).numpy()
         pred_class = np.argmax(probabilities)
         # conf = probabilities[pred_class]
         # if conf >= 0.5:

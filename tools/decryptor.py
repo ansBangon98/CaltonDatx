@@ -3,8 +3,9 @@ import tempfile
 
 from Crypto.Cipher import AES
 
-def decrypt(encrypted_path, key):
-    file_extension = os.path.splitext(encrypted_path)[1]
+def decrypt(encrypted_path, key, orig_file_extension):
+    # file_extension = os.path.splitext(encrypted_path)[1]
+    file_extension = orig_file_extension
     def unpad(data):
         padding_len = data[-1]
         return data[:-padding_len]

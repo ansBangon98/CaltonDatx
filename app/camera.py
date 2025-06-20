@@ -6,6 +6,7 @@ import core.state as state
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 
+
 class Camera():
     def __init__(self):
         self._event = None
