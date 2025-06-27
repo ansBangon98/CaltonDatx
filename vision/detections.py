@@ -1,8 +1,8 @@
-# import time
-import cv2
 import numpy as np
 import core.state as state
+
 from tools.tracker import Sort
+from PIL import Image
 
 
 class Detection():
@@ -13,7 +13,7 @@ class Detection():
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
 
-        self.tracker = Sort(max_age=20, min_hits=3, iou_threshold=0.3)
+        self.tracker = Sort(max_age=20, min_hits=3, iou_threshold=0.5)
 
         self._detection = ['Face', 'Body']
         # self._detection = ['Face']
@@ -118,13 +118,15 @@ class Detection():
         fw = frame.shape[1]
         fh = frame.shape[0]
         
-        size = 320
-        resize_frame = cv2.resize(frame.copy(), (size, size))
+        size = (320, 320)
+        frame = Image.fromarray(frame.copy())
+        resize_frame = frame.resize(size, Image.LANCZOS)
+        resize_frame = np.array(resize_frame)
+        
         blob = resize_frame.transpose(2, 0, 1)
         blob = np.expand_dims(blob, axis=0).astype(np.float32) / 255.0
+        
 
-        # interpreter = self.models.facpep_interpreter
-        # input_index = self.models.facpep_input_details[0]['index']
         self.interpreter.set_tensor(self.input_details[0]['index'], blob)
         self.interpreter.invoke()
         output_data = [self.interpreter.get_tensor(output['index']) for output in self.output_details]
@@ -132,7 +134,7 @@ class Detection():
         face_bbox, people_bbox = self.__get_bounding_box(bbox, fw, fh)
 
         detection_coords = {}
-        face_with_body, face_and_body = [], []
+        face_with_body = []
         is_has_face_body = 'Face' in self._detection and 'Body' in self._detection
         # if 'Face' in self._detection and 'Body' in self._detection:
         if is_has_face_body:
@@ -156,6 +158,9 @@ class Detection():
             trk = self.tracker.update(np.array(bounding_box))
             for coords_trk in trk:
                 x1, y1, x2, y2, id = map(int, coords_trk)
+                w, h = x2 - x1, y2 - y1
+                if w < 10 or h < 10 or w > 1000 or h > 1000:
+                    continue  # skip too small/large detections
                 ishasbody = False
                 if is_has_face_body:
                     for i in range(len(face_with_body)):
@@ -180,48 +185,4 @@ class Detection():
                         'body_coords': [x1, y1, x2, y2],
                         'face_coords': [None, None, None, None]
                         }
-
-
-        """
-        if 'Face' in self._detection and 'Body' in self._detection:
-            if people_bbox:
-                face_with_body, face_and_body = [], []
-                for pbbox in people_bbox:
-                    px1, py1, px2, py2 = pbbox
-                    for i in range(len(face_bbox)):
-                        fx1, fy1, fx2, fy2 = face_bbox[i]
-                        if fx1 > px1 and fx2 < px2 and fy1 > py1 and fy2 < py2:
-                            face_with_body.append([fx1, fy1, fx2, fy2])
-                            del face_bbox[i]
-                            break
-                
-                face_coords_list = []
-                for item in face_bbox:
-                    x1, y1, x2, y2 = item
-                    face_coords_list.append(f"{x1}{y1}{x2}{y2}")
-
-
-                face_and_body = face_bbox+people_bbox if face_bbox else people_bbox
-                trk = self.tracker.update(np.array(face_and_body))
-                for coords_trk in trk:
-                    x1, y1, x2, y2, id = map(int, coords_trk)
-                    ishasbody = False
-                    for i in range(len(face_with_body)):
-                        fx1, fy1, fx2, fy2 = face_with_body[i]
-                        if fx1 > x1 and fx2 < x2 and fy1 > y1 and fy2 < y2:
-                            detection_coords[id] = {
-                                'body_coords': [x1, y1, x2, y2],
-                                'face_coords': [fx1, fy1, fx2, fy2]
-                                }
-                            ishasbody = True
-                            del face_with_body[i]
-                            break
-                    if not ishasbody:
-                        coords = f"{x1}{y1}{x2}{y2}"
-                        if coords in face_coords_list:
-                            detection_coords[id] = {
-                            'body_coords': [None, None, None, None],
-                            'face_coords': [x1, y1, x2, y2]
-                            }
-        """
         return detection_coords

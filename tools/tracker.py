@@ -2,29 +2,17 @@ from __future__ import print_function
 
 import os
 import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from skimage import io
-
 import glob
 import time
 import argparse
-from filterpy.kalman import KalmanFilter
-
+from munkres import Munkres
 
 np.random.seed(0)
 
 def linear_assignment(cost_matrix):
-  try:
-    import lap
-    _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
-    return np.array([[y[i],i] for i in x if i >= 0]) #
-  except ImportError:
-    from scipy.optimize import linear_sum_assignment
-    x, y = linear_sum_assignment(cost_matrix)
-    return np.array(list(zip(x, y)))
+    m = Munkres()
+    indexes = m.compute(cost_matrix.tolist())
+    return np.array(indexes)
 
 
 def iou_batch(bb_test, bb_gt):
@@ -61,50 +49,81 @@ def convert_x_to_bbox(x,score=None):
   else:
     return np.array([x[0]-w/2.,x[1]-h/2.,x[0]+w/2.,x[1]+h/2.,score]).reshape((1,5))
 
-
 class KalmanBoxTracker(object):
   count = 0
-  def __init__(self,bbox):
-    self.kf = KalmanFilter(dim_x=7, dim_z=4) 
-    self.kf.F = np.array([[1,0,0,0,1,0,0],[0,1,0,0,0,1,0],[0,0,1,0,0,0,1],[0,0,0,1,0,0,0],  [0,0,0,0,1,0,0],[0,0,0,0,0,1,0],[0,0,0,0,0,0,1]])
-    self.kf.H = np.array([[1,0,0,0,0,0,0],[0,1,0,0,0,0,0],[0,0,1,0,0,0,0],[0,0,0,1,0,0,0]])
 
-    self.kf.R[2:,2:] *= 10.
-    self.kf.P[4:,4:] *= 1000.
-    self.kf.P *= 10.
-    self.kf.Q[-1,-1] *= 0.01
-    self.kf.Q[4:,4:] *= 0.01
+  def __init__(self, bbox):
+      # State vector [cx, cy, s, r, vx, vy, vs]
+      self.x = np.zeros((7, 1))
+      self.x[:4] = convert_bbox_to_z(bbox)
 
-    self.kf.x[:4] = convert_bbox_to_z(bbox)
-    self.time_since_update = 0
-    self.id = KalmanBoxTracker.count
-    KalmanBoxTracker.count += 1
-    self.history = []
-    self.hits = 0
-    self.hit_streak = 0
-    self.age = 0
+      # State covariance matrix
+      self.P = np.eye(7) * 10.
+      self.P[4:, 4:] *= 1000.  # High uncertainty in initial velocity
 
-  def update(self,bbox):
-    self.time_since_update = 0
-    self.history = []
-    self.hits += 1
-    self.hit_streak += 1
-    self.kf.update(convert_bbox_to_z(bbox))
+      # State transition matrix
+      self.F = np.eye(7)
+      self.F[0, 4] = 1
+      self.F[1, 5] = 1
+      self.F[2, 6] = 1
+
+      # Observation matrix
+      self.H = np.zeros((4, 7))
+      self.H[0, 0] = 1
+      self.H[1, 1] = 1
+      self.H[2, 2] = 1
+      self.H[3, 3] = 1
+
+      # Measurement noise
+      self.R = np.eye(4) * 0.5
+      self.R[2:, 2:] *= 10.
+
+      # Process noise
+      self.Q = np.eye(7) * 0.05
+      self.Q[6, 6] *= 0.01
+      self.Q[4:, 4:] *= 0.05
+
+      # Tracker variables
+      self.time_since_update = 0
+      self.id = KalmanBoxTracker.count
+      KalmanBoxTracker.count += 1
+      self.history = []
+      self.hits = 0
+      self.hit_streak = 0
+      self.age = 0
 
   def predict(self):
-    if((self.kf.x[6]+self.kf.x[2])<=0):
-      self.kf.x[6] *= 0.0
-    self.kf.predict()
-    self.age += 1
-    if(self.time_since_update>0):
-      self.hit_streak = 0
-    self.time_since_update += 1
-    self.history.append(convert_x_to_bbox(self.kf.x))
-    return self.history[-1]
+      if (self.x[2] + self.x[6]) <= 0:
+          self.x[6] = 0
+
+      # Predict state
+      self.x = self.F @ self.x
+      self.P = self.F @ self.P @ self.F.T + self.Q
+
+      self.age += 1
+      if self.time_since_update > 0:
+          self.hit_streak = 0
+      self.time_since_update += 1
+
+      self.history.append(convert_x_to_bbox(self.x))
+      return self.history[-1]
+
+  def update(self, bbox):
+      self.time_since_update = 0
+      self.history = []
+      self.hits += 1
+      self.hit_streak += 1
+
+      z = convert_bbox_to_z(bbox)
+      y = z - self.H @ self.x  # innovation
+      S = self.H @ self.P @ self.H.T + self.R  # innovation covariance
+      K = self.P @ self.H.T @ np.linalg.inv(S)  # Kalman gain
+
+      self.x = self.x + K @ y
+      self.P = (np.eye(7) - K @ self.H) @ self.P
 
   def get_state(self):
-    return convert_x_to_bbox(self.kf.x)
-
+      return convert_x_to_bbox(self.x)
 
 def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
   if(len(trackers)==0):
@@ -213,9 +232,9 @@ if __name__ == '__main__':
     if not os.path.exists('mot_benchmark'):
       print('\n\tERROR: mot_benchmark link not found!\n\n    Create a symbolic link to the MOT benchmark\n    (https://motchallenge.net/data/2D_MOT_2015/#download). E.g.:\n\n    $ ln -s /path/to/MOT2015_challenge/2DMOT2015 mot_benchmark\n\n')
       exit()
-    plt.ion()
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111, aspect='equal')
+    # plt.ion()
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111, aspect='equal')
 
   if not os.path.exists('output'):
     os.makedirs('output')
@@ -235,11 +254,12 @@ if __name__ == '__main__':
         dets[:, 2:4] += dets[:, 0:2]
         total_frames += 1
 
-        if(display):
-          fn = os.path.join('mot_benchmark', phase, seq, 'img1', '%06d.jpg'%(frame))
-          im =io.imread(fn)
-          ax1.imshow(im)
-          plt.title(seq + ' Tracked Targets')
+        # if(display):
+        #   pass
+        #   # fn = os.path.join('mot_benchmark', phase, seq, 'img1', '%06d.jpg'%(frame))
+        #   # im =io.imread(fn)
+        #   # ax1.imshow(im)
+        #   # plt.title(seq + ' Tracked Targets')
 
         start_time = time.time()
         trackers = mot_tracker.update(dets)
@@ -248,14 +268,15 @@ if __name__ == '__main__':
 
         for d in trackers:
           print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1'%(frame,d[4],d[0],d[1],d[2]-d[0],d[3]-d[1]),file=out_file)
-          if(display):
-            d = d.astype(np.int32)
-            ax1.add_patch(patches.Rectangle((d[0],d[1]),d[2]-d[0],d[3]-d[1],fill=False,lw=3,ec=colours[d[4]%32,:]))
+          # if(display):
+          #   d = d.astype(np.int32)
+          #   ax1.add_patch(patches.Rectangle((d[0],d[1]),d[2]-d[0],d[3]-d[1],fill=False,lw=3,ec=colours[d[4]%32,:]))
 
-        if(display):
-          fig.canvas.flush_events()
-          plt.draw()
-          ax1.cla()
+        # if(display):
+        #   pass
+        #   # fig.canvas.flush_events()
+        #   # plt.draw()
+        #   # ax1.cla()
 
   print("Total Tracking took: %.3f seconds for %d frames or %.1f FPS" % (total_time, total_frames, total_frames / total_time))
 

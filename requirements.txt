@@ -1,16 +1,7 @@
 pyinstaller
 kivy
-opencv-python
+numpy
 pycryptodome
-matplotlib
-scikit-image
-filterpy
-tensorflow
-# torch
-# torchvision
-# onnx
-# onnx-tf
-# tensorflow==2.13.0
-# tensorflow-addons==0.21.0
-# keras==2.13.1
-# tensorflow-probability==0.21.0
+tensorflow # tflite-runtime # => android
+pillow
+munkres

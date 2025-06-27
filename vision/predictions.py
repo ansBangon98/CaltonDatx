@@ -1,38 +1,20 @@
 import numpy as np
 import tensorflow as tf
 import core.state as state
-import cv2
 
-from keras.preprocessing.image import img_to_array
 from collections import deque, Counter
-
 from PIL import Image
 
-# def _3d_gender_preprocess_image(image_array):
-#     size = (224, 224)
-#     mean = tf.constant([0.485, 0.456, 0.406])
-#     std = tf.constant([0.229, 0.224, 0.225])
-
-#     img = Image.fromarray(image_array).convert("RGB").resize(size)
-#     img = np.array(img) / 255.0
-#     img = (img - mean.numpy()) / std.numpy()
-#     img = np.expand_dims(img, axis=0).astype(np.uint8)
-#     return img
-
+def __image_resize(image_array, size, channel):
+    image = Image.fromarray(image_array).convert(channel)
+    resize_image = image.resize(size, Image.LANCZOS)
+    image_array = np.array(resize_image)
+    return image_array
+"""
 def _3d_preprocess_image_quantize(image_array, input_scale, input_zero_point):
-    """
-    size = (224, 224)
-    mean = tf.constant([0.485, 0.456, 0.406])
-    std = tf.constant([0.229, 0.224, 0.225])
-
-    img = Image.fromarray(image_array).convert("RGB").resize(size)
-    img = np.array(img) / 255.0
-    img = (img - mean.numpy()) / std.numpy()
-    img = np.expand_dims(img, axis=0).astype(np.uint8)
-    return img
-    """
-    img = cv2.resize(image_array, (224, 224))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # img = cv2.resize(image_array, (224, 224))
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    __image_resize(image_array)
     img = np.asarray(img, dtype=np.float32)
 
     # Normalize to original float32 range [0, 1]
@@ -43,30 +25,21 @@ def _3d_preprocess_image_quantize(image_array, input_scale, input_zero_point):
     img = np.clip(img, 0, 255).astype(np.uint8)
 
     return np.expand_dims(img, axis=0)  # shape: (1, 224, 224, 3)
+"""
 
 def _3d_preprocess_image(image_array):
-    img = cv2.resize(image_array, (224, 224))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = __image_resize(image_array, (224, 224), 'RGB')
     img = np.asarray(img, dtype=np.float32)
     img = img / 255.0
-    return np.expand_dims(img, axis=0)  # shape: (1, 224, 224, 3)
+    return np.expand_dims(img, axis=0)
 
 def _1d_preprocess_image(image_array, input_scale, input_zero_point):
-    """
-    img = cv2.resize(image_array, (48, 48), interpolation=cv2.INTER_AREA)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = img.astype(float) / 255.0
-    img = img_to_array(img)
-    img = np.expand_dims(img, axis=0).astype(np.uint8)
-    return img
-    """
-    img = cv2.resize(image_array, (48, 48), interpolation=cv2.INTER_AREA)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = np.expand_dims(img, axis=-1)  # shape: (48, 48, 1)
-    img = np.expand_dims(img, axis=0)   # shape: (1, 48, 48, 1)
+    img = __image_resize(image_array, (48, 48), 'L')
+    img = np.expand_dims(img, axis=-1)
+    img = np.expand_dims(img, axis=0)
 
     # Quantize
-    img = img.astype(np.float32) / 255.0  # Normalize to [0, 1]
+    img = img.astype(np.float32) / 255.0
     img = img / input_scale + input_zero_point
     img = np.clip(img, 0, 255).astype(np.uint8)
     return img
@@ -98,12 +71,14 @@ class Age():
         return age_classification
 
     def _predic_age(self, face, id):
-        image_tensor = _3d_preprocess_image_quantize(face, self.input_scale, self.input_zero_point)
+        image_tensor = _3d_preprocess_image(face)
+        # image_tensor = _3d_preprocess_image_quantize(face, self.input_scale, self.input_zero_point)
         self.interpreter.set_tensor(self.input_details[0]['index'], image_tensor)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
-        output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
-        probabilities = tf.nn.softmax(output_float[0]).numpy()
+        # output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
+        # probabilities = tf.nn.softmax(output_float[0]).numpy()
+        probabilities = tf.nn.softmax(output_data[0]).numpy()
         pred_class = np.argmax(probabilities)
         conf = probabilities[pred_class]
         if conf >= 0.5:

@@ -1,14 +1,17 @@
 import time
-import cv2
 import threading
 import numpy as np
 
+from kivy.utils import platform
+if platform == 'android':
+    from android.permissions import request_permissions, Permission
 from kivy.app import App
 from kivy.graphics.texture import Texture
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.clock import Clock
+from kivy.uix.camera import Camera
 
 import sys
 import os
@@ -18,7 +21,6 @@ from vision.load_models import Models
 from vision.detections import Detection
 from vision.predictions import Gender, Age, Emotion
 from vision.displays import Caption, Track
-from kivy.uix.camera import Camera
 from app.controller import AppController
 
 import core.state as state
@@ -99,10 +101,6 @@ class KivyCam(BoxLayout):
         self.fps_start = time.time()
         self.camera.play = True
         self.event = Clock.schedule_interval(self.update, 1.0 / 30)
-        
-        # if self.capture is None:
-        #     self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        #     self.event = Clock.schedule_interval(self.update, 1.0 / 30)
 
     def stop_camera(self, *args):
         # if self.capture:
@@ -120,12 +118,9 @@ class KivyCam(BoxLayout):
             pixels = texture.pixels
 
             frame = np.frombuffer(pixels, dtype=np.uint8)
-            frame = frame.reshape((size[1], size[0], 4))
-            frame = frame[:, :, :3].copy()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            
+            frame = frame.reshape((size[1], size[0], 4))[:, :, :3].copy()
             self.frame = frame.copy()
+            self.image.canvas.after.clear()
             if self.detection is not None:
                 for id, item in self.detection.items():
                     prediction = None
@@ -138,39 +133,64 @@ class KivyCam(BoxLayout):
 
                     if item['face_coords'] != [None, None, None, None]:
                         x1, y1, x2, y2 = item['face_coords']
-                        frame = state.track._create_face_box(frame, x1, y1, x2, y2)
+                        object = {
+                            'coords': [x1, y1, x2, y2],
+                            'win_size': self.image.size,
+                            'resolution': size,
+                            'widget': self.image
+                        }
+                        state.track._create_face_box(object)
                         if item['body_coords'] == [None, None, None, None]:
                             if prediction is not None:
                                 if gender != '':
-                                    frame = state.caption._display_caption(age, x2, y1, frame)
-                                    frame = state.caption._display_caption(gender, x2, y1+30, frame)
+                                    state.caption._display_caption(object, age)
+                                    object['coords'] = [x1, y1+30, x2, y2]
+                                    state.caption._display_caption(object, gender)
+                                    object['coords'] = [x1, y1+60, x2, y2]
+                                    state.caption._display_caption(object, emotion)
 
                     if item['body_coords'] != [None, None, None, None]:
                         x1, y1, x2, y2 = item['body_coords']
-                        frame = state.track._create_body_box(frame, x1, y1, x2, y2)
+                        object = {
+                            'coords': [x1, y1, x2, y2],
+                            'win_size': self.image.size,
+                            'resolution': size,
+                            'widget': self.image
+                        }
+                        state.track._create_body_box(object)
                         if item['face_coords'] != [None, None, None, None]:
                             if prediction is not None:
                                 if gender != '':
-                                    frame = state.caption._display_caption(age, x1, y1, frame)
-                                    frame = state.caption._display_caption(gender, x1, y1+30, frame)
-                                    frame = state.caption._display_caption(emotion, x1, y1+60, frame)
-
+                                    state.caption._display_caption(object, age)
+                                    object['coords'] = [x1, y1+30, x2, y2]
+                                    state.caption._display_caption(object, gender)
+                                    object['coords'] = [x1, y1+60, x2, y2]
+                                    state.caption._display_caption(object, emotion)
+                """
                 fps_end_time = time.time()
                 fps = self.fps_count / (fps_end_time - self.fps_start)
                 fps_label = f"FPS: {fps:.2f}"
                 cv2.putText(frame, fps_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 self.fps_count += 1
+                """
 
-                buf = cv2.flip(frame, 0).tobytes()
-                img_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-                img_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-                self.image.texture = img_texture
+            frame = np.flip(frame, axis=0)
+            texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+            texture.blit_buffer(frame.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
+            self.image.texture = texture
 
 
 class MainApp(App):
+    def on_start(self):
+        if platform == 'android':
+            request_permissions([
+                Permission.WRITE_EXTERNAL_STORAGE,
+                Permission.READ_EXTERNAL_STORAGE
+            ])
+
     def build(self):
         return KivyCam()
 
 
-if __name__ == '__main__':
-    MainApp().run()
+# if __name__ == '__main__':
+#     MainApp().run()

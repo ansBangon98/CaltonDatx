@@ -1,16 +1,17 @@
-import cv2
 import time
+import numpy as np
 import threading
 import core.state as state
 
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
+from kivy.uix.camera import Camera as webCam
 
 
 class Camera():
     def __init__(self):
         self._event = None
-        self.__capture = None
+        self.__webcam = webCam(play=False)
 
         self.__fps_count = 0
         self.__fps_start = time.time()
@@ -47,66 +48,87 @@ class Camera():
                         }
 
     def _update(self, dt):
-        if self.__capture and self.__capture.isOpened():
-            ret, frame = self.__capture.read()
-            if ret:
-                self.__frame = frame.copy()
-                if self.__detection is not None:
-                    for id, item in self.__detection.items():
-                        prediction = None
-                        if id in self.__prediction:
-                            prediction = self.__prediction[id]
-                        if prediction is not None:
-                            age = prediction['age']
-                            gender = prediction['gender']
-                            emotion = prediction['emotion']
+        if self.__webcam.texture:
+            texture = self.__webcam.texture
+            size = texture.size
+            pixels = texture.pixels
 
+            frame = np.frombuffer(pixels, dtype=np.uint8)
+            frame = frame.reshape((size[1], size[0], 4))[:, :, :3].copy()
+            self.__frame = frame.copy()
+            image = state.appcont.ids.img_camera
+            image.canvas.after.clear()
+            if self.__detection is not None:
+                for id, item in self.__detection.items():
+                    prediction = None
+                    if id in self.__prediction:
+                        prediction = self.__prediction[id]
+                    if prediction is not None:
+                        age = prediction['age']
+                        gender = prediction['gender']
+                        emotion = prediction['emotion']
+
+                    if item['face_coords'] != [None, None, None, None]:
+                        x1, y1, x2, y2 = item['face_coords']
+                        object = {
+                            'coords': [x1, y1, x2, y2],
+                            'win_size': image.size,
+                            'resolution': size,
+                            'widget': image
+                        }
+                        state.track._create_face_box(object)
+                        if item['body_coords'] == [None, None, None, None]:
+                            if prediction is not None:
+                                if gender != '':
+                                    state.caption._display_caption(object, age)
+                                    object['coords'] = [x1, y1+30, x2, y2]
+                                    state.caption._display_caption(object, gender)
+                                    object['coords'] = [x1, y1+60, x2, y2]
+                                    state.caption._display_caption(object, emotion)
+
+                    if item['body_coords'] != [None, None, None, None]:
+                        x1, y1, x2, y2 = item['body_coords']
+                        object = {
+                            'coords': [x1, y1, x2, y2],
+                            'win_size': image.size,
+                            'resolution': size,
+                            'widget': image
+                        }
+                        state.track._create_body_box(object)
                         if item['face_coords'] != [None, None, None, None]:
-                            x1, y1, x2, y2 = item['face_coords']
-                            frame = state.track._create_face_box(frame, x1, y1, x2, y2)
-                            if item['body_coords'] == [None, None, None, None]:
-                                if prediction is not None:
-                                    if gender != '':
-                                        frame = state.caption._display_caption(age, x2, y1, frame)
-                                        frame = state.caption._display_caption(gender, x2, y1+30, frame)
-                                        frame = state.caption._display_caption(emotion, x2, y1+60, frame)
-
-                        if item['body_coords'] != [None, None, None, None]:
-                            x1, y1, x2, y2 = item['body_coords']
-                            frame = state.track._create_body_box(frame, x1, y1, x2, y2)
-                            if item['face_coords'] != [None, None, None, None]:
-                                if prediction is not None:
-                                    if gender != '':
-                                        frame = state.caption._display_caption(age, x1, y1, frame)
-                                        frame = state.caption._display_caption(gender, x1, y1+30, frame)
-                                        frame = state.caption._display_caption(emotion, x1, y1+60, frame)
+                            if prediction is not None:
+                                if gender != '':
+                                    state.caption._display_caption(object, age)
+                                    object['coords'] = [x1, y1+30, x2, y2]
+                                    state.caption._display_caption(object, gender)
+                                    object['coords'] = [x1, y1+60, x2, y2]
+                                    state.caption._display_caption(object, emotion)
                 
+                """
                 fps_end_time = time.time()
                 fps = self.__fps_count / (fps_end_time - self.__fps_start)
                 fps_label = f"FPS: {fps:.2f}"
                 cv2.putText(frame, fps_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 self.__fps_count += 1
+                """
 
-                buf = cv2.flip(frame, 0).tobytes()
-                image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-                image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-                self._image = image_texture
+                frame = np.flip(frame, axis=0)
+                texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+                texture.blit_buffer(frame.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
+                self._image = texture
     
     def _start_camera(self, camsource):
-        if self.__capture is None:
-            self.__fps_count = 0
-            self.__fps_start = time.time()
-            self.__is_thread = True
-            threading.Thread(target=self.__get_detection).start()
-            self.__capture = cv2.VideoCapture(camsource, cv2.CAP_DSHOW)
-            self._event = Clock.schedule_interval(self._update, 1.0 / 30)
+        self.__fps_count = 0
+        self.__fps_start = time.time()
+        self.__is_thread = True
+        self.__webcam.play = True
+        threading.Thread(target=self.__get_detection).start()
+        self._event = Clock.schedule_interval(self._update, 1.0 / 30)
     
     def _stop_camera(self):
-        if self.__capture:
+        if self.__webcam.texture:
             self.__is_thread = False
             self._event.cancel()
-            self.__capture.release()
-            self.__capture = None
             self.__detection = None
             self.__prediction = {}
             self.__frame = None

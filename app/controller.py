@@ -1,7 +1,6 @@
-import cv2
-import time
 import core.state as state
 
+from PIL import Image
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
@@ -30,10 +29,11 @@ class AppController():
             self.__cam_event = None
     
     def capture_background(self):
-        image = cv2.imread("./assets/deviceconfig/cam_bg.png")
-        buf = cv2.flip(image, 0).tobytes()
-        image_texture = Texture.create(size=(image.shape[1], image.shape[0]), colorfmt='bgr')
-        image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+        image = Image.open("./assets/deviceconfig/cam_bg.png").convert('RGB')
+        image = image.transpose(Image.FLIP_TOP_BOTTOM)
+        buf = image.tobytes()
+        image_texture = Texture.create(size=image.size, colorfmt='rgb')
+        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         return image_texture
     
     def _load_initial_screen(self):
@@ -43,6 +43,8 @@ class AppController():
         self.sm.current = "device_config"
         self.ids = deviceconfig.ids
         self.ids.img_camera.texture = self.cam_bg
+
+    # def __
 
     def __get_capture_image(self, dt):
         if self.camera._image is not None:
@@ -54,7 +56,8 @@ class AppController():
         if instance.text == 'Start':
             instance.text = 'Stop'    
             self.camera._start_camera(0)
-            self.__cam_event = Clock.schedule_interval(self.__get_capture_image, 1.0/30)
+            # self.__get_capture_image(1.0/30)
+            # self.__cam_event = Clock.schedule_interval(self.__get_capture_image, 1.0/30)
         else:
             instance.text = 'Start'
             self.camera._stop_camera()

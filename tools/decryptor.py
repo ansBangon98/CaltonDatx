@@ -1,11 +1,6 @@
-import os
-import tempfile
-
 from Crypto.Cipher import AES
 
-def decrypt(encrypted_path, key, orig_file_extension):
-    # file_extension = os.path.splitext(encrypted_path)[1]
-    file_extension = orig_file_extension
+def decrypt(encrypted_path, key, output_path):
     def unpad(data):
         padding_len = data[-1]
         return data[:-padding_len]
@@ -18,9 +13,8 @@ def decrypt(encrypted_path, key, orig_file_extension):
     padded_plaintext = cipher.decrypt(ciphertext)
     plaintext = unpad(padded_plaintext)
 
-    temp_path = None
-    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp:
-        temp.write(plaintext)
-        temp.flush()
-        temp_path = temp
-    return temp_path
+    with open(output_path, "wb") as out:
+        out.write(plaintext)
+    
+    return output_path
+

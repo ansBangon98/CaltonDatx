@@ -1,3 +1,5 @@
+
+"""
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from app.controller import AppController
@@ -8,7 +10,6 @@ from vision.predictions import Gender, Age, Emotion
 from vision.displays import Caption, Track
 
 import core.state as state
-
 
 class CaltonDatx(App):
     def build(self):
@@ -32,3 +33,9 @@ class CaltonDatx(App):
 
 if __name__=="__main__":
     CaltonDatx().run()
+"""
+    
+from tests.camera import MainApp
+
+if __name__=="__main__":
+    MainApp().run()

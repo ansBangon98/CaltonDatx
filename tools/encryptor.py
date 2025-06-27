@@ -25,4 +25,4 @@ def encrypt_model(model_path, output_path, key):
     print('file has been encrypted')
 
 key = keygen.generate_32byte_key(state.encryption_key)
-encrypt_model('./models/decrypted model/mobilenet_v3_small_gender_quantized.tflite', './models/mobilenet_v3_small_gender_quantized.bin', key)
+encrypt_model('./models/decrypted model/face_people.tflite', './models/face_people.bin', key)

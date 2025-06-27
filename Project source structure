@@ -1,4 +1,4 @@
-PeopleAnalyticsApp/
+CaltonDatx/
 ├── main.py                       # Entry point
 ├── requirements.txt
 ├── buildozer.spec                # For Android build
