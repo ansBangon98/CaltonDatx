@@ -44,9 +44,7 @@ class AppController():
         self.ids = deviceconfig.ids
         self.ids.img_camera.texture = self.cam_bg
 
-    # def __
-
-    def __get_capture_image(self, dt):
+    def __get_image_view(self, dt):
         if self.camera._image is not None:
             self.ids.img_camera.texture = self.camera._image
     
@@ -56,8 +54,8 @@ class AppController():
         if instance.text == 'Start':
             instance.text = 'Stop'    
             self.camera._start_camera(0)
-            # self.__get_capture_image(1.0/30)
-            # self.__cam_event = Clock.schedule_interval(self.__get_capture_image, 1.0/30)
+            # self.__get_image_view(1.0/30)
+            self.__cam_event = Clock.schedule_interval(self.__get_image_view, 1.0/30)
         else:
             instance.text = 'Start'
             self.camera._stop_camera()

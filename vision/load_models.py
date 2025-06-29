@@ -10,9 +10,9 @@ from kivy.utils import platform
 
 if platform == 'android':
     import tflite_runtime.interpreter as tflite
-    from android.storage import app
+    from android.storage import app_storage_path
     # shared_storage_path = "/storage/emulated/0/CaltonDatx"
-    shared_storage_path = app().get_cache_dir()
+    shared_storage_path = os.path.join(app_storage_path(), 'cache')
     if not os.path.exists(shared_storage_path):
         os.makedirs(shared_storage_path)
     tmp_dir = shared_storage_path

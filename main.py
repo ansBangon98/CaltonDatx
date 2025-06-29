@@ -1,5 +1,5 @@
 
-"""
+
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from app.controller import AppController
@@ -33,9 +33,9 @@ class CaltonDatx(App):
 
 if __name__=="__main__":
     CaltonDatx().run()
-"""
-    
-from tests.camera import MainApp
 
-if __name__=="__main__":
-    MainApp().run()
+    
+# from tests.camera import MainApp
+
+# if __name__=="__main__":
+#     MainApp().run()
