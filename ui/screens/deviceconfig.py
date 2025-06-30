@@ -43,12 +43,14 @@ class DeviceConfig(Screen):
     
 
     def _on_click_start(self):
-        is_valid, error = self.appcont._validate_input_data()
-        if not is_valid:
-            Factory.ShowMessage_Info(title='INCOMPLETE', message_text=error).open()
-        else:
-            self.appcont._start_stop_camera()
+        # is_valid, error = self.appcont._validate_input_data()
+        # if not is_valid:
+        #     Factory.ShowMessage_Info(title='INCOMPLETE', message_text=error).open()
+        # else:
+        #     self.appcont._start_stop_camera()
+        self.appcont._start_stop_camera()
     
+
     def _on_click_close(self):
         Factory.ShowMessage_Ask(title='CONFIRMATION', message_text='Are you sure do you want to close this program?').open()
     

@@ -1,5 +1,3 @@
-
-
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from app.controller import AppController

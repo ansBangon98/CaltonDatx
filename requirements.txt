@@ -1,7 +1,17 @@
-pyinstaller
-kivy
-numpy
-pycryptodome
-tensorflow # tflite-runtime # => android
-pillow
-munkres
+# CROSS PLATFORM Library
+Python==3.10.1
+kivy==2.3.1
+numpy==1.26.4
+pycryptodome==3.23.0
+pillow==11.2.1
+munkres==1.1.4
+
+# Android OS requirements
+# tflite-runtime
+# pyjnius
+
+# Windows OS requirements
+pyinstaller==6.13.0
+pygrabber==0.2
+tensorflow==2.19.0
+opencv-python-headless==4.11.0.86

@@ -1,9 +1,13 @@
 import numpy as np
-import tensorflow as tf
 import core.state as state
 
+# import tensorflow as tf
 from collections import deque, Counter
 from PIL import Image
+
+def softmax(x):
+    e_x = np.exp(x - np.max(x))
+    return e_x / np.sum(e_x)
 
 def __image_resize(image_array, size, channel):
     image = Image.fromarray(image_array).convert(channel)
@@ -76,9 +80,8 @@ class Age():
         self.interpreter.set_tensor(self.input_details[0]['index'], image_tensor)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
-        # output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
-        # probabilities = tf.nn.softmax(output_float[0]).numpy()
-        probabilities = tf.nn.softmax(output_data[0]).numpy()
+        # probabilities = tf.nn.softmax(output_data[0]).numpy()
+        probabilities = softmax(output_data[0])
         pred_class = np.argmax(probabilities)
         conf = probabilities[pred_class]
         if conf >= 0.5:
@@ -108,8 +111,7 @@ class Gender():
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
         # output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
-        # probabilities = tf.nn.softmax(output_float[0]).numpy()
-        probabilities = tf.nn.softmax(output_data[0]).numpy()
+        probabilities = softmax(output_data[0])
         pred_class = np.argmax(probabilities)
         conf = probabilities[pred_class]
         if conf >= 0.5:
@@ -137,7 +139,7 @@ class Emotion():
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
         output_float = (output_data.astype(np.float32) - self.output_zero_point) * self.output_scale
-        probabilities = tf.nn.softmax(output_float[0]).numpy()
+        probabilities = softmax(output_float[0])
         pred_class = np.argmax(probabilities)
         # conf = probabilities[pred_class]
         # if conf >= 0.5:

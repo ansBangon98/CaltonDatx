@@ -1,84 +1,69 @@
+import numpy as np
+
 from kivy.uix.accordion import Widget
 from kivy.graphics import Color, Line, Rectangle
 from kivy.core.text import Label
 from kivy.core.window import Window
+from PIL import Image, ImageDraw, ImageFont
 
 
 
 class Caption():
-    def _display_caption(self, object, text):
-        # color=(1, 1, 1, 1)
-        color=(0, 0, 0, 1)
-        font_size=20
-        x1, _, _, y2 = object['coords']
-        resolution = object['resolution']
-        widget = object['widget']
-        size = widget.size
-        win_size = Window.size
-        x = x1 + (size[0]-resolution[0]) / 2
-        y = ((resolution[1] - y2) + (size[1]-resolution[1]) / 2 ) + (win_size[1]-size[1]) + 5
-        label = Label(text=text, font_size=font_size)
-        label.refresh()
-        texture = label.texture
-        texture_size = texture.size
+    def _display_caption(self, frame, coords, caption):
+        x, y = coords
+        x, y = x+5, y+5
+        image = Image.fromarray(frame)
+        image_draw = ImageDraw.Draw(image)
 
-        with widget.canvas.after:
-            Color(*color)  # RGBA
-            Rectangle(texture=texture, pos=(x, y), size=texture_size)
+        color = (0, 0, 0)
+        font = ImageFont.truetype('./assets/fonts/Roboto-Regular.ttf', 14)
+        image_draw.text((x, y), caption, fill=color, font=font)
+        return np.array(image)
 
 class Track():
-    def _create_body_box(self, object):
-        x1, y1, x2, y2 = object['coords']
-        resolution = object['resolution']
-        widget = object['widget']
-        size = widget.size
-        win_size = Window.size
-        with widget.canvas.after:
-            x = x1 + (size[0]-resolution[0]) / 2
-            y = ((resolution[1] - y2) + (size[1]-resolution[1]) / 2 ) + (win_size[1]-size[1]) + 5
-            w = x2 - x1
-            h = y2 - y1
-            Color(0.3333, 0.0078, 0.9804)
-            Line(rectangle=(x, y, w, h), width=1)
+    def _create_body_box(self, frame, coords):
+        x1, y1, x2, y2 = coords
+        w = x2 - x1
+        h = y2 - y1
+        image = Image.fromarray(frame)
+        image_draw = ImageDraw.Draw(image)
 
-            Color(0, 1, 0)
-            corner_len = min(w, h) * 0.15
-            
-            Line(points=[x, y + h, x + corner_len, y + h], width=2)
-            Line(points=[x, y + h, x, y + h - corner_len], width=2)
+        color = (85, 2, 250)
+        image_draw.rectangle([x1, y1, x2, y2], outline=color, width=1)
 
-            Line(points=[x + w, y + h, x + w - corner_len, y + h], width=2)
-            Line(points=[x + w, y + h, x + w, y + h - corner_len], width=2)
+        color = (0, 255, 0)
+        corner_len = int(min(w, h) * 0.15)
+        image_draw.line([x1, y1, x1 + corner_len, y1], fill=color, width=5)
+        image_draw.line([x1, y1, x1, y1 + corner_len], fill=color, width=5)
 
-            Line(points=[x, y, x + corner_len, y], width=2)
-            Line(points=[x, y, x, y + corner_len], width=2)
+        image_draw.line([x2 - corner_len, y1, x2, y1], fill=color, width=5)
+        image_draw.line([x2, y1, x2, y1 + corner_len], fill=color, width=5)
 
-            Line(points=[x + w, y, x + w - corner_len, y], width=2)
-            Line(points=[x + w, y, x + w, y + corner_len], width=2)
+        image_draw.line([x1, y2, x1 + corner_len, y2], fill=color, width=5)
+        image_draw.line([x1, y2, x1, y2 - corner_len], fill=color, width=5)
 
-    def _create_face_box(self, object):
-        x1, y1, x2, y2 = object['coords']
-        resolution = object['resolution']
-        widget = object['widget']
-        size = widget.size
-        win_size = Window.size
-        with widget.canvas.after:
-            x = x1 + (size[0]-resolution[0]) / 2
-            y = ((resolution[1] - y2) + (size[1]-resolution[1]) / 2 ) + (win_size[1]-size[1]) + 5
-            w = x2 - x1
-            h = y2 - y1
+        image_draw.line([x2 - corner_len, y2, x2, y2], fill=color, width=5)
+        image_draw.line([x2, y2, x2, y2 - corner_len], fill=color, width=5)
+        return np.array(image)
 
-            Color(0, 1, 0)
-            corner_len = min(w, h) * 0.15
-            
-            Line(points=[x, y + h, x + corner_len, y + h], width=1)
-            Line(points=[x, y + h, x, y + h - corner_len], width=1)
+    def _create_face_box(self, frame, coords):
+        x1, y1, x2, y2 = coords
+        w = x2 - x1
+        h = y2 - y1
+        image = Image.fromarray(frame)
+        image_draw = ImageDraw.Draw(image)
 
-            Line(points=[x + w, y + h, x + w - corner_len, y + h], width=1)
-            Line(points=[x + w, y + h, x + w, y + h - corner_len], width=1)
+        color = (0, 174, 255)
+        corner_len = int(min(w, h) * 0.15)
+        image_draw.line([x1, y1, x1 + corner_len, y1], fill=color, width=2)
+        image_draw.line([x1, y1, x1, y1 + corner_len], fill=color, width=2)
 
-            Line(points=[x, y, x + corner_len, y], width=1)
-            Line(points=[x, y, x, y + corner_len], width=1)
+        image_draw.line([x2 - corner_len, y1, x2, y1], fill=color, width=2)
+        image_draw.line([x2, y1, x2, y1 + corner_len], fill=color, width=2)
 
-            Line(points=[x + w, y, x + w - corner_len, y], width=1)
-            Line(points=[x + w, y, x + w, y + corner_len], width=1)
+        image_draw.line([x1, y2, x1 + corner_len, y2], fill=color, width=2)
+        image_draw.line([x1, y2, x1, y2 - corner_len], fill=color, width=2)
+
+        image_draw.line([x2 - corner_len, y2, x2, y2], fill=color, width=2)
+        image_draw.line([x2, y2, x2, y2 - corner_len], fill=color, width=2)
+        return np.array(image)

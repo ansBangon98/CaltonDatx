@@ -3,6 +3,7 @@ import numpy as np
 import threading
 import core.state as state
 
+from PIL import Image, ImageDraw, ImageFont
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.camera import Camera as webCam
@@ -56,8 +57,6 @@ class Camera():
             frame = np.frombuffer(pixels, dtype=np.uint8)
             frame = frame.reshape((size[1], size[0], 4))[:, :, :3].copy()
             self.__frame = frame.copy()
-            image = state.appcont.ids.img_camera
-            image.canvas.after.clear()
             if self.__detection is not None:
                 for id, item in self.__detection.items():
                     prediction = None
@@ -69,48 +68,35 @@ class Camera():
                         emotion = prediction['emotion']
 
                     if item['face_coords'] != [None, None, None, None]:
-                        x1, y1, x2, y2 = item['face_coords']
-                        object = {
-                            'coords': [x1, y1, x2, y2],
-                            'win_size': image.size,
-                            'resolution': size,
-                            'widget': image
-                        }
-                        state.track._create_face_box(object)
+                        x1, y1, _, _ = item['face_coords']
+                        frame = state.track._create_face_box(frame, item['face_coords'])
                         if item['body_coords'] == [None, None, None, None]:
                             if prediction is not None:
                                 if gender != '':
-                                    state.caption._display_caption(object, age)
-                                    object['coords'] = [x1, y1+30, x2, y2]
-                                    state.caption._display_caption(object, gender)
-                                    object['coords'] = [x1, y1+60, x2, y2]
-                                    state.caption._display_caption(object, emotion)
+                                    frame = state.caption._display_caption(frame, [x1, y1], age)
+                                    frame = state.caption._display_caption(frame, [x1, y1+10], gender)
+                                    frame = state.caption._display_caption(frame, [x1, y1+20], emotion)
 
                     if item['body_coords'] != [None, None, None, None]:
-                        x1, y1, x2, y2 = item['body_coords']
-                        object = {
-                            'coords': [x1, y1, x2, y2],
-                            'win_size': image.size,
-                            'resolution': size,
-                            'widget': image
-                        }
-                        state.track._create_body_box(object)
+                        x1, y1, _, _ = item['body_coords']
+                        frame = state.track._create_body_box(frame, item['body_coords'])
                         if item['face_coords'] != [None, None, None, None]:
                             if prediction is not None:
                                 if gender != '':
-                                    state.caption._display_caption(object, age)
-                                    object['coords'] = [x1, y1+30, x2, y2]
-                                    state.caption._display_caption(object, gender)
-                                    object['coords'] = [x1, y1+60, x2, y2]
-                                    state.caption._display_caption(object, emotion)
+                                    frame = state.caption._display_caption(frame, [x1, y1], age)
+                                    frame = state.caption._display_caption(frame, [x1, y1+15], gender)
+                                    frame = state.caption._display_caption(frame, [x1, y1+30], emotion)
                 
-                """
+                image = Image.fromarray(frame)
+                image_draw = ImageDraw.Draw(image)
+                color = (0, 0, 0)
+                font = ImageFont.truetype('./assets/fonts/Roboto-Regular.ttf', 17)
                 fps_end_time = time.time()
                 fps = self.__fps_count / (fps_end_time - self.__fps_start)
                 fps_label = f"FPS: {fps:.2f}"
-                cv2.putText(frame, fps_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                image_draw.text((10, 10), fps_label, fill=color, font=font)
+                frame = np.array(image)
                 self.__fps_count += 1
-                """
 
                 frame = np.flip(frame, axis=0)
                 texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
