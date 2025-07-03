@@ -48,6 +48,34 @@ class Camera():
                             'emotion': emotion if emotion is not None else self.__prediction[id]['emotion'] if id in self.__prediction else ''
                         }
 
+    def _set_image_orientation(self, frame):
+        image = Image.fromarray(frame)
+        angle = int(state.appcont.ids.drp_orientation.text)
+        rotate_image = image.rotate(angle, expand=True)
+        return np.array(rotate_image)
+
+
+    def _capture_camera_view(self):
+        if self.__webcam.texture:
+            texture = self.__webcam.texture
+            size = texture.size
+            pixels = texture.pixels
+
+            frame = np.frombuffer(pixels, dtype=np.uint8)
+            frame = frame.reshape((size[1], size[0], 4))[:, :, :3].copy()
+            frame = self._set_image_orientation(frame)
+            self.__frame = frame.copy()
+            # frame = np.flip(frame, axis=0)
+            texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+            texture.blit_buffer(frame.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
+            self._image = texture
+    
+    def _rotate_image(self):
+        frame = self._set_image_orientation(self.__frame)
+        texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        texture.blit_buffer(frame.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
+        self._image = texture
+
     def _update(self, dt):
         if self.__webcam.texture:
             texture = self.__webcam.texture

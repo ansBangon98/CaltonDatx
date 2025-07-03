@@ -1,0 +1,897 @@
+<ImageButton>:
+    fit_mode: 'contain'
+    size_hint: None, None
+    size: 40, 40
+
+<AutoResizeLabel@Label>:
+    color: (0, 0, 0, 1)
+    size_hint: None, None
+    text_size: None, None
+    size: self.texture_size
+    padding: 5, 5
+    halign: 'center'
+    valign: 'middle'
+
+<OptionButton@ToggleButton>:
+    background_color: (0, 0, 0, 0)
+    canvas.before:
+        Color:
+            rgba: (0, 0, 0, 1)
+        Ellipse:
+            pos: self.x + 5, self.center_y - 6
+            size: (14, 14)
+        Color:
+            rgba: (0, 0, 1, 1) if self.state == "down" else (1, 1, 1, 1)
+        Ellipse:
+            pos: self.x + 8, self.center_y - 3
+            size: (8, 8)
+
+<DropDownItemList@SpinnerOption>:
+    background_normal: ""
+    background_color: (0, 0, 0, 0)
+    text_size: self.width - 10, None
+    halign: "left"
+    valign: "middle"
+    size_hint_y: None
+    height: 28
+    color: (0, 0, 0, 1)
+    font_size: 12
+    canvas.before:
+        Color:
+            rgb: (0.4157, 0.6941, 0.9882, 0.50)
+        Rectangle:
+            pos: self.pos
+            size: self.width-5, self.height
+        Color:
+            rgba: (0, 0, 0, 1)
+        Line:
+            width: 1
+            rectangle: (self.x, self.y, self.width-5, self.height)
+
+<CustomCheckBox@CheckBox>:
+    size_hint: None, None
+    size: 15, 15
+    canvas.before:
+        Color:
+            rgba: (0.4902, 0.9765, 1, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: (0,0,0, 1)
+        Line:
+            rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+    canvas.after:
+        Color:
+            rgba: (0, 0, 0, 1) if self.active else (0, 0, 0, 0)
+        Line:
+            width: 1.5
+            points: [self.x+7, self.y+self.height/2, self.x+self.width/2, self.y+5, self.right-3, self.top-5] if self.active else []
+
+<CustomSwitch@BoxLayout>:
+    is_on: False
+    size_hint: None, None
+    size: 45, 15
+    canvas.before:
+        Color:
+            rgba: (0.502, 0.502, 0.502, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    Button:
+        size_hint: None, None
+        size: 25, self.parent.height
+        background_color: (0, 1, 0, 1) if self.parent.is_on else (1, 0, 0, 1)
+        pos: self.parent.x+25 if self.parent.is_on else self.parent.x, self.parent.y
+        text: "ON" if self.parent.is_on else "OFF"
+        font_size: 12
+        on_release: self.parent.toggle()
+
+<CustomGroupBox@BoxLayout>:
+    orientation: 'vertical'
+    size_hint_x: None
+    pos: self.parent.pos
+    label_text: ""
+    canvas.before:
+        Color:
+            rgba: (0.5, 0.5, 0.5, 1)
+        Line:
+            rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+            width: 1
+    FloatLayout:
+        pos: self.parent.pos
+        size_hint_y: None
+        height: 22
+        AutoResizeLabel:
+            text: root.label_text
+            font_size: 14
+            pos: self.parent.x+10, self.parent.top-12
+            canvas.before:
+                Color:
+                    rgba: (1, 1, 1, 1)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                Color:
+                    rgba: (0.5, 0.5, 0.5, 1)
+                Line:
+                    rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                    width: 1
+
+<DeviceConfig>:
+    BoxLayout:
+        orientation: 'vertical'
+        #Title Header Design
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 47
+            canvas.before:
+                Color:
+                    rgba: (0.2157, 0.1294, 0.3137, 1)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Image:
+                source: ("./assets/deviceconfig/calton_logo_people.png")
+                fit_mode: 'scale-down'
+                size_hint_x: None
+                width: 100
+            Widget:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: None
+                width: 140
+                padding: (0, 0, 10, 0)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: None
+                    width: self.parent.width
+                    AutoResizeLabel:
+                        pos_hint: {'right': 1}
+                        text: 'Version: 2.0.0.1'
+                        color :(1, 1, 1, 1)
+                        font_size : 14
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: None
+                    width: self.parent.width
+                    AutoResizeLabel:
+                        pos_hint: {'right': 1}
+                        text: 'Device: DHS83HDS4D'
+                        color: (1, 1, 1, 1)
+                        font_size : 14
+        #Content Layout
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 5, 18, 5, 5
+            BoxLayout:
+                orientation: 'vertical'
+                canvas.before:
+                    Color:
+                        rgba: (0.5, 0.5, 0.5, 1)
+                    Line:
+                        rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                        width: 1
+                FloatLayout:
+                    size_hint_y: None
+                    height: 25
+                    AutoResizeLabel:
+                        text: 'Configuration'
+                        font_size: 14
+                        pos: 25 , self.parent.top-15
+                        canvas.before:
+                            Color:
+                                rgba: (1, 1, 1, 1)
+                            Rectangle:
+                                pos: self.pos
+                                size:  self.size
+                            Color:
+                                rgba: (0.5, 0.5, 0.5, 1)
+                            Line:
+                                rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                                width: 1
+                BoxLayout:
+                    orientation: 'horizontal'
+                    padding: 5, 0, 5, 5
+                    BoxLayout:
+                        orientation: 'vertical'
+                        BoxLayout:
+                            canvas.before:
+                                Color:
+                                    rgba: (0.3098, 0.2745, 0.2745, 1)
+                                Rectangle:
+                                    pos: self.pos
+                                    size: self.size
+                            Image:
+                                id: img_camera
+                                fit_mode: 'contain'
+                                size: self.parent.size
+                                # source: ("./assets/deviceconfig/cam_bg.png")
+                            
+                        FloatLayout:
+                            size_hint: None, None
+                            size:0,0
+                            ImageButton:
+                                id: imgbtn_capture
+                                pos: self.parent.parent.width-32, self.parent.top+2
+                                # pos: self.parent.width - 10, 10
+                                source: ("./assets/deviceconfig/capture.png")
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_x: None
+                        width: 380
+                        BoxLayout:
+                            size_hint_y: None
+                            height: 380
+                            padding: 10, 0, 0, 10
+                            BoxLayout:
+                                orientation: 'vertical'
+                                canvas.before:
+                                    Color:
+                                        rgba: (0.5, 0.5, 0.5, 1)
+                                    Line:
+                                        width: 1
+                                        points: [self.x, self.top-13, self.right, self.top-13]
+                                AutoResizeLabel:
+                                    text: 'Camera Settings'
+                                    font_size: 14
+                                    canvas.before:
+                                        Color:
+                                            rgba: (1, 1, 1, 1)
+                                        Rectangle: 
+                                            pos: self.pos
+                                            size: self.size
+                                        Color:
+                                            rgb: (0.5, 0.5, 0.5)
+                                        Line:
+                                            rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                                            width: 1
+                                BoxLayout:
+                                    orientation: 'vertical'
+                                    padding: 0, 10, 0, 0
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+                                        size_hint_y: None
+                                        height: 100
+                                        padding: 0, 0, 0, 5
+                                        canvas.before:
+                                            Color:
+                                                rgb: (0.5, 0.5, 0.5)
+                                            Line:
+                                                rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                                                width: 1
+                                        BoxLayout:
+                                            orientation: 'vertical'
+                                            size_hint_x: None
+                                            width: 30
+                                            padding: 5, 0, 0, 0
+                                            OptionButton:
+                                                id: opt_network
+                                                size_hint_y: None
+                                                height: 40
+                                                group: "cam_ref"
+                                                on_press: root._on_press_cam_ref()
+                                            Widget:
+                                        BoxLayout:
+                                            orientation: 'vertical'
+                                            BoxLayout:
+                                                orientation: 'horizontal'
+                                                FloatLayout:
+                                                    Image:
+                                                        source: ("./assets/deviceconfig/cctv.png")
+                                                        fit_mode: 'scale-down'
+                                                        size_hint: None, None
+                                                        size: self.texture_size
+                                                        pos: self.parent.parent.x, self.parent.parent.y-10
+                                                    AutoResizeLabel:
+                                                        text: 'Network'
+                                                        bold: True
+                                                        font_size: 14
+                                                        pos: self.parent.parent.x+55, self.parent.parent.y+5
+                                            FloatLayout:    
+                                                AutoResizeLabel:
+                                                    text: 'Enter RTSP/Link'
+                                                    font_size: 13
+                                                    pos: self.parent.x, self.parent.y
+                                            TextInput:
+                                                id: txt_rtsp
+                                                background_normal: ""
+                                                background_active: ""
+                                                background_color: 1, 1, 1, 1
+                                                foreground_color: 0, 0, 0, 1
+                                                multiline: False
+                                                size_hint: None, None
+                                                size: 335, 28
+                                                font_size: 12
+                                                canvas.before:
+                                                    Color:
+                                                        rgba: (0, 0, 0, 1)
+                                                    Line:
+                                                        rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                                                        width: 1
+                                BoxLayout:
+                                    orientation: 'vertical'
+                                    padding: 0, 10, 0, 0
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+                                        size_hint_y: None
+                                        height: 100
+                                        padding: 0, 0, 0, 5
+                                        canvas.before:
+                                            Color:
+                                                rgb: (0.5, 0.5, 0.5)
+                                            Line:
+                                                rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                                                width: 1
+                                        BoxLayout:
+                                            orientation: 'vertical'
+                                            size_hint_x: None
+                                            width: 30
+                                            padding: 5, 0, 0, 0
+                                            OptionButton:
+                                                id: opt_camera
+                                                size_hint_y: None
+                                                height: 40
+                                                group: "cam_ref"
+                                            Widget:
+                                        BoxLayout:
+                                            orientation: 'vertical'
+                                            BoxLayout:
+                                                orientation: 'horizontal'
+                                                FloatLayout:
+                                                    Image:
+                                                        source: ("./assets/deviceconfig/camera.png")
+                                                        fit_mode: 'scale-down'
+                                                        size_hint: None, None
+                                                        size: self.texture_size
+                                                        pos: self.parent.parent.x, self.parent.parent.y-20
+                                                    AutoResizeLabel:
+                                                        text: 'Camera'
+                                                        bold: True
+                                                        font_size: 14
+                                                        pos: self.parent.parent.x+55, self.parent.parent.y+5
+                                            FloatLayout:    
+                                                AutoResizeLabel:
+                                                    text: 'Select Device Camera'
+                                                    font_size: 13
+                                                    pos: self.parent.x, self.parent.y
+                                            BoxLayout:
+                                                orientation: 'vertical'
+                                                size_hint_y: None
+                                                height: 28
+                                                canvas.before:
+                                                    Color:
+                                                        rgb: (0, 0, 0)
+                                                    Line:
+                                                        rounded_rectangle: [self.parent.x, self.y, self.width-5, self.height, 5]
+                                                        width: 1
+                                                Spinner:
+                                                    id: drp_cameras
+                                                    background_normal: ""
+                                                    background_color: (0,0,0,0.0)
+                                                    color: (0, 0, 0, 1)
+                                                    text: "Select an option"
+                                                    text_size: self.width, None
+                                                    halign: "left"
+                                                    valign: "middle"
+                                                    # values: ["Select an option","Option 1", "Option 2", "Option 3", "Option 4"]
+                                                    size_hint: None, None
+                                                    size: 325, 28
+                                                    font_size: 12
+                                                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                                                    option_cls: "DropDownItemList"
+                                                    on_text: root._camera_selected_changed()
+                                                FloatLayout:
+                                                    Image:
+                                                        source: ("./assets/deviceconfig/down.png")
+                                                        fit_mode: 'scale-down'
+                                                        size_hint: None, None
+                                                        size: 15, 15
+                                                        pos: self.parent.x + self.parent.width-25, self.parent.y+5
+                                BoxLayout:
+                                    orientation: 'horizontal'
+                                    size_hint_y: None
+                                    height:32
+                                    BoxLayout:
+                                        size_hint_x: None
+                                        width: 70
+                                        AutoResizeLabel:
+                                            text: "Resolution :"
+                                            font_size: 13
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 28
+                                        canvas.before:
+                                            Color:
+                                                rgb: (0, 0, 0)
+                                            Line:
+                                                rounded_rectangle: [self.x+8, self.y, self.width-13, self.height, 5]
+                                                width: 1
+                                        Spinner:
+                                            id: drp_resolution
+                                            background_normal: ""
+                                            background_color: (0,0,0,0.0)
+                                            color: (0, 0, 0, 1)
+                                            text: "Select an option"
+                                            text_size: self.width, None
+                                            halign: "left"
+                                            valign: "middle"
+                                            # values: ["Select an option","Option 1", "Option 2", "Option 3", "Option 4"]
+                                            size_hint: None, None
+                                            size: 275, 28
+                                            font_size: 12
+                                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                                            option_cls: "DropDownItemList"
+                                        FloatLayout:
+                                            Image:
+                                                source: ("./assets/deviceconfig/down.png")
+                                                fit_mode: 'scale-down'
+                                                size_hint: None, None
+                                                size: 15, 15
+                                                pos: self.parent.x + self.parent.width-25, self.parent.y+5
+                                BoxLayout:
+                                    orientation: 'horizontal'
+                                    size_hint_y: None
+                                    height:32
+                                    BoxLayout:
+                                        size_hint_x: None
+                                        width: 70
+                                        AutoResizeLabel:
+                                            text: "Orientation :"
+                                            font_size: 13
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 28
+                                        canvas.before:
+                                            Color:
+                                                rgb: (0, 0, 0)
+                                            Line:
+                                                rounded_rectangle: [self.x+8, self.y, self.width-13, self.height, 5]
+                                                width: 1
+                                        Spinner:
+                                            id: drp_orientation
+                                            background_normal: ""
+                                            background_color: (0,0,0,0.0)
+                                            color: (0, 0, 0, 1)
+                                            text: "Select an option"
+                                            text_size: self.width, None
+                                            halign: "left"
+                                            valign: "middle"
+                                            values: ["Select an option","0 degrees", "90 degrees", "180 degrees", "270 degrees", "360 degrees"]
+                                            size_hint: None, None
+                                            size: 275, 28
+                                            font_size: 12
+                                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                                            option_cls: "DropDownItemList"
+                                        FloatLayout:
+                                            Image:
+                                                source: ("./assets/deviceconfig/down.png")
+                                                fit_mode: 'scale-down'
+                                                size_hint: None, None
+                                                size: 15, 15
+                                                pos: self.parent.x + self.parent.width-25, self.parent.y+5
+                                BoxLayout:
+                                    orientation: 'horizontal'
+                                    size_hint_y: None
+                                    height:32
+                                    BoxLayout:
+                                        size_hint_x: None
+                                        width: 70
+                                        AutoResizeLabel:
+                                            text: "Brightness :"
+                                            font_size: 13
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+                                        padding: 8, 0, 5, 0
+                                        size_hint_y: None
+                                        height: 23
+                                        BoxLayout:
+                                            orientation: 'horizontal'
+                                            # padding: 10, 0, 0, 0
+                                            canvas.before:
+                                                Color: 
+                                                    rgba: (0.8196, 0.8000, 0.8000, 1)
+                                                RoundedRectangle:
+                                                    size: self.size
+                                                    pos: self.pos
+                                                    radius: [4]
+                                            Slider:
+                                                id: sldr_brightness
+                                                min: 0
+                                                max: 256
+                                                step: 1
+                                                value:128
+                                                orientation: 'horizontal'
+                                                background_width: 0
+                                                cursor_size: [15, 15]
+                                                canvas.before:
+                                                    Color:
+                                                        rgba: 0.2, 0.6, 1, 1
+                                                    Rectangle:
+                                                        pos: self.x, self.center_y - 2
+                                                        size: self.width, 4
+                                                canvas.after:
+                                                    Color:
+                                                        rgba: 1, 0, 0, 1
+                                                    Rectangle:
+                                                        pos: self.value_pos[0] - self.cursor_size[0] / 2, self.center_y - self.cursor_size[1] / 2
+                                                        size: self.cursor_size
+                                            AutoResizeLabel:
+                                                text: str(int(sldr_brightness.value))
+                                                font_size: 13
+                                BoxLayout:
+                                    orientation: 'horizontal'
+                                    size_hint_y: None
+                                    height:32
+                                    BoxLayout:
+                                        size_hint_x: None
+                                        width: 70
+                                        AutoResizeLabel:
+                                            text: "Contrast :"
+                                            font_size: 13
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+                                        padding: 8, 0, 5, 0
+                                        size_hint_y: None
+                                        height: 23
+                                        BoxLayout:
+                                            orientation: 'horizontal'
+                                            # padding: 10, 0, 0, 0
+                                            canvas.before:
+                                                Color: 
+                                                    rgba: (0.8196, 0.8000, 0.8000, 1)
+                                                RoundedRectangle:
+                                                    size: self.size
+                                                    pos: self.pos
+                                                    radius: [4]
+                                            Slider:
+                                                id: sldr_contrast
+                                                min: 0
+                                                max: 256
+                                                step: 1
+                                                value:128
+                                                orientation: 'horizontal'
+                                                background_width: 0
+                                                cursor_size: [15, 15]
+                                                canvas.before:
+                                                    Color:
+                                                        rgba: 0.2, 0.6, 1, 1
+                                                    Rectangle:
+                                                        pos: self.x, self.center_y - 2
+                                                        size: self.width, 4
+                                                canvas.after:
+                                                    Color:
+                                                        rgba: 1, 0, 0, 1
+                                                    Rectangle:
+                                                        pos: self.value_pos[0] - self.cursor_size[0] / 2, self.center_y - self.cursor_size[1] / 2
+                                                        size: self.cursor_size
+                                            AutoResizeLabel:
+                                                text: str(int(sldr_contrast.value))
+                                                font_size: 13
+
+                        Widget:
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: 230
+                    FloatLayout:
+                        size_hint_y: None
+                        height: 30
+                        AutoResizeLabel:
+                            text: 'Analytics Settings'
+                            font_size: 14
+                            pos: self.parent.x+20, self.parent.top-29
+                            canvas.before:
+                                Color:
+                                    rgba: (0.5, 0.5, 0.5, 1)
+                                Line:
+                                    width: 1
+                                    points: [self.parent.x+5, self.parent.top-15, self.parent.width-5, self.parent.top-15]
+                                Color:
+                                    rgba: (1, 1, 1, 1)
+                                Rectangle: 
+                                    pos: self.pos
+                                    size: self.size
+                                Color:
+                                    rgba: (0.5, 0.5, 0.5, 1)
+                                Line:
+                                    rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                                    width: 1
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        BoxLayout:
+                            size_hint_x: None
+                            width: 250
+                            FloatLayout:
+                                AutoResizeLabel:
+                                    text: 'Analytics Services :'
+                                    font_size: 13
+                                    pos: self.parent.x+10, self.parent.top-25
+                                CustomSwitch:
+                                    pos: self.parent.x+130, self.parent.top-21
+                                AutoResizeLabel:
+                                    text: 'Autostart :'
+                                    font_size: 13
+                                    pos: self.parent.x+10, self.parent.top-45
+                                    on_touch_down: 
+                                        if self.collide_point(*args[1].pos): ckbx_autostart.active = not ckbx_autostart.active
+                                CustomCheckBox:
+                                    id: ckbx_autostart
+                                    active: True
+                                    pos: self.parent.x+85, self.parent.top-41
+                                AutoResizeLabel:
+                                    text: 'Status'
+                                    font_size: 13
+                                    pos: self.parent.x+30, self.parent.y+5
+                                    canvas.before:
+                                        Color:
+                                            rgba: (0, 0.5020, 0, 1)
+                                        RoundedRectangle:
+                                            pos: self.parent.x+10, self.y+5
+                                            size: 15, 15
+                                            radius: [5]
+                        Widget:
+                        FloatLayout:
+                            size_hint_x: None
+                            width: 510
+                            padding: 5, 5, 5, 5
+                            BoxLayout:
+                                orientation: 'horizontal'
+                                spacing: 10
+                                padding: 5, 5, 5, 5
+                                pos: self.parent.pos
+                                CustomGroupBox:
+                                    width: 120
+                                    label_text: "Detection"
+                                    FloatLayout:
+                                        CustomCheckBox:
+                                            id: ckbx_body
+                                            active: True
+                                            pos: self.parent.x+10, self.parent.top-15
+                                            on_active: root._ckbx_body_check_changed()
+                                        AutoResizeLabel:
+                                            text: 'Body'
+                                            font_size: 13
+                                            pos: self.parent.x+30, self.parent.top-20
+                                            on_touch_down:
+                                                if self.collide_point(*args[1].pos): ckbx_body.active = not ckbx_body.active
+                                        CustomCheckBox:
+                                            id: ckbx_face
+                                            active: True
+                                            pos: self.parent.x+10, self.parent.top-40
+                                            on_active: root._ckbx_face_check_changed()
+                                        AutoResizeLabel:
+                                            text: 'Face'
+                                            font_size: 13
+                                            pos: self.parent.x+30, self.parent.top-45
+                                            on_touch_down:
+                                                if self.collide_point(*args[1].pos): ckbx_face.active = not ckbx_face.active
+                                CustomGroupBox:
+                                    width: 170
+                                    label_text: "Prediction"
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 35
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_gender
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-15
+                                            AutoResizeLabel:
+                                                text: 'Gender'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-20
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_gender.active = not ckbx_gender.active
+                                            AutoResizeLabel:
+                                                text: 'Show :'
+                                                font_size: 13
+                                                pos: self.parent.x+45, self.parent.top-37
+                                            CustomSwitch:
+                                                pos: self.parent.x+95, self.parent.top-32
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 35
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_age
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-15
+                                            AutoResizeLabel:
+                                                text: 'Age'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-20
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_age.active = not ckbx_age.active
+                                            AutoResizeLabel:
+                                                text: 'Show :'
+                                                font_size: 13
+                                                pos: self.parent.x+45, self.parent.top-37
+                                            CustomSwitch:
+                                                pos: self.parent.x+95, self.parent.top-32
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 35
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_emotion
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-15
+                                            AutoResizeLabel:
+                                                text: 'Emotion'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-20
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_emotion.active = not ckbx_emotion.active
+                                            AutoResizeLabel:
+                                                text: 'Show :'
+                                                font_size: 13
+                                                pos: self.parent.x+45, self.parent.top-37
+                                            CustomSwitch:
+                                                pos: self.parent.x+95, self.parent.top-32
+                                    Widget:
+                                CustomGroupBox:
+                                    width: 185
+                                    label_text: "Age Classification"
+                                    spacing: 3
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 22
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_child
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-12
+                                            AutoResizeLabel:
+                                                text: 'Child (3-12)'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-17
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_child.active = not ckbx_child.active
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 22
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_teen
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-10
+                                            AutoResizeLabel:
+                                                text: 'Teen (13-19)'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-15
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_teen.active = not ckbx_teen.active
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 22
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_young_adult
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-10
+                                            AutoResizeLabel:
+                                                text: 'Young Adult (20-29)'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-15
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_young_adult.active = not ckbx_young_adult.active
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 22
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_adult
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-10
+                                            AutoResizeLabel:
+                                                text: 'Adult (30-39)'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-15
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_adult.active = not ckbx_adult.active
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 22
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_middleaged
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-10
+                                            AutoResizeLabel:
+                                                text: 'Middle-Aged (40-59)'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-15
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_middleaged.active = not ckbx_middleaged.active
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        size_hint_y: None
+                                        height: 22
+                                        FloatLayout:
+                                            pos: self.parent.pos
+                                            CustomCheckBox:
+                                                id: ckbx_senior
+                                                active: True
+                                                pos: self.parent.x+10, self.parent.top-10
+                                            AutoResizeLabel:
+                                                text: 'Senior (60+)'
+                                                font_size: 13
+                                                pos: self.parent.x+30, self.parent.top-15
+                                                on_touch_down:
+                                                    if self.collide_point(*args[1].pos): ckbx_senior.active = not ckbx_senior.active
+                                    Widget:
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: 45
+                    padding: 5, 5, 5, 5
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        canvas.before:
+                            Color:
+                                rgba: (0.8275, 0.8235, 0.8784, 1)
+                            Rectangle:
+                                size: self.size
+                                pos: self.pos
+                            Color:
+                                rgba: (0.5, 0.5, 0.5, 1)
+                            Line:
+                                rounded_rectangle: [self.x, self.y, self.width, self.height, 5]
+                        FloatLayout:
+                            CustomCheckBox:
+                                id : ckbx_save_configuration
+                                active: True
+                                pos: self.parent.x+8, self.parent.top-25
+                            AutoResizeLabel:
+                                text: 'Save this configuration'
+                                font_size: 13
+                                pos: self.parent.x+25, self.parent.top-30
+                                on_touch_down:
+                                    if self.collide_point(*args[1].pos): ckbx_save_configuration.active = not ckbx_save_configuration.active
+                        FloatLayout:
+                            size_hint_x: None
+                            width: 200
+                            pos: self.parent.width, self.parent.y
+                            Button:
+                                id: btn_start
+                                text: 'Start'
+                                font_size: 13
+                                color: (0, 0, 0, 1)
+                                background_normal: ""
+                                background_color: (0.1843, 0.6392, 0.1137, 1)
+                                size_hint: None, None
+                                size: 90, 25
+                                pos: self.parent.x, self.parent.y+5
+                                on_press: root._on_click_start()
+                            
+                            Button:
+                                id: btn_close
+                                text: 'Close'
+                                font_size: 13
+                                color: (0, 0, 0, 1)
+                                background_normal: ""
+                                background_color: (0.1843, 0.6392, 0.1137, 1)
+                                size_hint: None, None
+                                size: 90, 25
+                                pos: self.parent.x+105, self.parent.y+5
+                                on_press: root._on_click_close()

@@ -1,7 +1,6 @@
 import numpy as np
 import core.state as state
 
-# import tensorflow as tf
 from collections import deque, Counter
 from PIL import Image
 

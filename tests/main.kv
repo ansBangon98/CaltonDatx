@@ -1,0 +1,49 @@
+<MyLayout>:
+    orientation: 'vertical'
+
+    ScrollView:
+        size_hint: (1, 1)
+        bar_width: 10  # optional: set scroll bar width
+        scroll_type: ['bars', 'content']  # optional: allow both bar and touch scroll
+
+        GridLayout:
+            id: grid
+            cols: 1
+            size_hint_y: None
+            height: self.minimum_height  # important for vertical scrolling
+
+            # Add as many widgets as you want
+            Button:
+                text: "Button 1"
+                size_hint_y: None
+                height: 100
+
+            Button:
+                text: "Button 2"
+                size_hint_y: None
+                height: 100
+
+            Button:
+                text: "Button 3"
+                size_hint_y: None
+                height: 100
+
+            Button:
+                text: "Button 4"
+                size_hint_y: None
+                height: 100
+
+            Button:
+                text: "Button 5"
+                size_hint_y: None
+                height: 100
+
+            Button:
+                text: "Button 6"
+                size_hint_y: None
+                height: 100
+
+            Button:
+                text: "Button 7"
+                size_hint_y: None
+                height: 100

@@ -3,6 +3,7 @@ import sys
 import core.state as state
 
 from kivy.uix.screenmanager import Screen
+from kivy.utils import platform
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.uix.image import Image
@@ -13,9 +14,10 @@ from kivy.animation import Animation
 from ui.widgets.tools import TextCanvasWidget
 from ui.widgets.popup import *
 
-Window.size = (869, 754)
-Window.minimum_width = 869
-Window.minimum_height = 754
+if platform == 'win':
+    Window.size = (869, 754)
+    Window.minimum_width = 869
+    Window.minimum_height = 754
 
 Window.clearcolor = (1, 1, 1, 1)
 
@@ -41,14 +43,22 @@ class DeviceConfig(Screen):
         super().__init__(**kw)
         self.appcont = state.appcont
     
+    def _camera_selected_changed(self):
+        self.appcont._load_resolutions()
 
     def _on_click_start(self):
-        # is_valid, error = self.appcont._validate_input_data()
-        # if not is_valid:
-        #     Factory.ShowMessage_Info(title='INCOMPLETE', message_text=error).open()
-        # else:
-        #     self.appcont._start_stop_camera()
-        self.appcont._start_stop_camera()
+        is_valid, error = self.appcont._start_validate_input()
+        if not is_valid:
+            Factory.ShowMessage_Info(title='INCOMPLETE', message_text=error).open()
+        else:
+            self.appcont._start_stop_camera()
+    
+    def _on_click_capture(self):
+        is_valid, error = self.appcont._capture_validate_input()
+        if not is_valid:
+            Factory.ShowMessage_Info(title='INCOMPLETE', message_text=error).open()
+        else:
+            self.appcont._capture_view()
     
 
     def _on_click_close(self):

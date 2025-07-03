@@ -1,0 +1,172 @@
+<Spacer@Widget>:
+    size_hint_y: None
+    height: dp(2)
+    canvas.before:
+        Color:
+            rgba: (0.3765, 0.4000, 0.3961, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+<Prediction>:
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: None
+        width: dp(250)
+        padding: dp(15), 0, dp(15), 0
+        canvas.before:
+            Color:
+                rgba: (0.1176, 0.1176, 0.1216, 1)
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(50)
+            Label:
+                text: 'Detection'
+                color: (1,1,1,1)
+                font_name: 'Roboto'
+                font_size: sp(17)
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            padding: dp(10),dp(10),dp(10),dp(10)
+            size_hint_y: None
+            height: dp(200)
+            spacing: dp(10)
+            canvas.before:
+                Color:
+                    rgba: (0.1647, 0.1647, 0.1686, 1)
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [10]
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(40)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(5)
+                    CheckBox:
+                        size_hint: None, None
+                        size: dp(20), dp(20)
+                        id: ckbx_gender
+                        active: True
+                    Label:
+                        text: 'Gender'
+                        color: 1, 1, 1, 1
+                        font_name: 'Roboto'
+                        font_size: dp(17)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        on_touch_down:
+                            if self.collide_point(*args[1].pos): ckbx_gender.active = not ckbx_gender.active
+                Widget:
+                    size_hint_y: None
+                    height: dp(2)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(5)
+                    padding: dp(40), 0, dp(30), 0
+                    Label:
+                        text: 'Show :'
+                        color: 1, 1, 1, 1
+                        font_name: 'Roboto'
+                        font_size: dp(17)
+                        halign: 'left'
+                        valign: 'middle'
+                        size_hint_x: None
+                        text_size: self.size[0], self.texture_size[1]
+                    Switch:
+                        active: True
+            Spacer:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(40)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(5)
+                    CheckBox:
+                        size_hint: None, None
+                        size: dp(20), dp(20)
+                        id: ckbx_age
+                        active: True
+                    Label:
+                        text: 'Age'
+                        color: 1, 1, 1, 1
+                        font_name: 'Roboto'
+                        font_size: dp(17)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        on_touch_down:
+                            if self.collide_point(*args[1].pos): ckbx_age.active = not ckbx_age.active
+                Widget:
+                    size_hint_y: None
+                    height: dp(2)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(5)
+                    padding: dp(40), 0, dp(30), 0
+                    Label:
+                        text: 'Show :'
+                        color: 1, 1, 1, 1
+                        font_name: 'Roboto'
+                        font_size: dp(17)
+                        halign: 'left'
+                        valign: 'middle'
+                        size_hint_x: None
+                        text_size: self.size[0], self.texture_size[1]
+                    Switch:
+                        active: True
+            Spacer:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(40)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(5)
+                    CheckBox:
+                        size_hint: None, None
+                        size: dp(20), dp(20)
+                        id: ckbx_emotion
+                        active: True
+                    Label:
+                        text: 'Emotion'
+                        color: 1, 1, 1, 1
+                        font_name: 'Roboto'
+                        font_size: dp(17)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        on_touch_down:
+                            if self.collide_point(*args[1].pos): ckbx_emotion.active = not ckbx_emotion.active
+                Widget:
+                    size_hint_y: None
+                    height: dp(2)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(5)
+                    padding: dp(40), 0, dp(30), 0
+                    Label:
+                        text: 'Show :'
+                        color: 1, 1, 1, 1
+                        font_name: 'Roboto'
+                        font_size: dp(17)
+                        halign: 'left'
+                        valign: 'middle'
+                        size_hint_x: None
+                        text_size: self.size[0], self.texture_size[1]
+                    Switch:
+                        active: True
+            Spacer:
+        Widget:
+            size_hint_y: 1

@@ -1,0 +1,95 @@
+<NavButton@ButtonBehavior+BoxLayout>:
+    orientation: 'vertical'
+    # size_hint: None, None
+    # size: (40, 40)
+    size_hint_x: None
+    width: dp(35)
+    icon_source: None
+    canvas.before:
+        Color:
+            # rgba: (0.1647, 0.1647, 0.1686, 1)
+            rgba: (0.1373, 0.1373, 0.1373, 1)
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [10]
+    Image:
+        fit_mode: 'contain'
+        size: self.size
+        source: root.icon_source
+
+<CameraConfiguration>:
+    BoxLayout:
+        orientation: 'horizontal'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: None
+            width: dp(50)
+            size_hint_y: 1
+            spacing: dp(10)
+            # padding: dp(10), dp(5), dp(5), dp(5)
+            padding: 0, dp(5), 0, dp(5)
+            canvas.before:
+                Color:
+                    # rgba: (0.1176, 0.1176, 0.1216, 1)
+                    rgba: (0.0980, 0.0980, 0.0980, 1)
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(35)
+                padding: dp(8), 0, dp(8), 0
+                NavButton:
+                    icon_source: ('./assets/camconfig/camsettings.png')
+                    on_release: root.toggle_panel('camsettings', self)
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(35)
+                padding: dp(8), 0, dp(8), 0
+                NavButton:
+                    icon_source: ('./assets/camconfig/detection.png')
+                    on_release: root.toggle_panel('detection', self)
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(35)
+                padding: dp(8), 0, dp(8), 0
+                NavButton:
+                    icon_source: ('./assets/camconfig/prediction.png')
+                    on_release: root.toggle_panel('prediction', self)
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(35)
+                padding: dp(8), 0, dp(8), 0
+                NavButton:
+                    icon_source: ('./assets/camconfig/classification.png')
+            Widget:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(35)
+                padding: dp(8), 0, dp(8), 0
+                NavButton:
+                    icon_source: ('./assets/camconfig/about.png')
+        FloatLayout:
+            BoxLayout:
+                padding: dp(50),0,0,0
+                id: side_panel
+                orientation: 'vertical'
+                # size_hint_x: 0.5
+                # size_hint_x: None
+                # width: dp(400)
+                size_hint_y: 1
+                x: -self.width
+                ScrollView:
+                    do_scroll_x: False
+                    bar_width: dp(10)
+                    BoxLayout:
+                        id: panel_container
+                        orientation: 'vertical'
+                
+                

@@ -1,0 +1,353 @@
+<DropDownItemList@SpinnerOption>:
+    background_normal: ""
+    background_color: (0, 0, 0, 0)
+    text_size: self.size
+    halign: "left"
+    valign: "middle"
+    size_hint_y: None
+    height: dp(25)
+    color: (0, 0, 0, 1)
+    font_name: 'Roboto'
+    font_size: sp(12)
+    padding: dp(5), 0, dp(5), 0
+    canvas.before:
+        Color:
+            rgb: (0.0510, 0.5922, 0.7412, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: (0, 0, 0, 1)
+        Line:
+            width: 1
+            rectangle: (self.x, self.y, self.width, self.height)
+<Spacer@Widget>:
+    size_hint_y: None
+    height: dp(2)
+    canvas.before:
+        Color:
+            rgba: (0.3765, 0.4000, 0.3961, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<CameraSettings>:
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: None
+        width: dp(350)
+        padding: dp(15), 0, dp(15), 0
+        canvas.before:
+            Color:
+                # rgba: (0.1176, 0.1176, 0.1216, 1)
+                rgba: (0.1373, 0.1373, 0.1373, 1)
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(50)
+            Label:
+                text: 'Camera Settings'
+                color: (1,1,1,1)
+                font_name: 'Roboto'
+                font_size: sp(17)
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            padding: dp(10),dp(10),dp(10),dp(10)
+            size_hint_y: None
+            height: dp(400)
+            spacing: dp(10)
+            canvas.before:
+                Color:
+                    # rgba: (0.1647, 0.1647, 0.1686, 1)
+                    rgba: (0.1490, 0.1490, 0.1490, 1)
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [10]
+            BoxLayout:
+                orientation: 'horizontal'
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: None
+                    width: dp(40)
+                    CheckBox:
+                        id: otp_network
+                        group: "cam_ref"
+                    Widget:
+                BoxLayout:
+                    orientation: 'vertical'
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(10)
+                        Image:
+                            fit_mode: 'contain'
+                            source: ('./assets/camsettings/cctv.png')
+                            size_hint: None, None
+                            size: dp(40), dp(40)
+                        Label:
+                            text: 'Network'
+                            color: (1,1,1,1)
+                            font_name: 'Roboto'
+                            font_size: sp(14)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                    Label:
+                        text: 'Enter RTSP/Link'
+                        color: (1,1,1,1)
+                        font_name: 'Roboto'
+                        font_size: sp(12)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    TextInput:
+                        id: txt_rtsp
+                        background_normal: ""
+                        background_active: ""
+                        background_color: 0.7882, 0.7882, 0.7882, 1
+                        foreground_color: 0, 0, 0, 1
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(25)
+                        font_name: 'Roboto'
+                        font_size: sp(12)
+            Spacer:
+            BoxLayout:
+                orientation: 'horizontal'
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: None
+                    width: dp(40)
+                    CheckBox:
+                        id: otp_camera
+                        group: "cam_ref"
+                    Widget:
+                BoxLayout:
+                    orientation: 'vertical'
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(10)
+                        Image:
+                            fit_mode: 'contain'
+                            source: ('./assets/camsettings/cam.png')
+                            size_hint: None, None
+                            size: dp(40), dp(40)
+                        Label:
+                            text: 'Camera'
+                            color: (1,1,1,1)
+                            font_name: 'Roboto'
+                            font_size: sp(14)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                    Label:
+                        text: 'Select Device Camera'
+                        color: (1,1,1,1)
+                        font_name: 'Roboto'
+                        font_size: sp(12)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    Spinner:
+                        id: drp_cameras
+                        background_normal: ""
+                        background_color: 0.7882, 0.7882, 0.7882, 1
+                        color: (0, 0, 0, 1)
+                        text: "Select an option"
+                        text_size: self.size
+                        halign: "left"
+                        valign: "middle"
+                        values: ["Select an option","Option 1", "Option 2", "Option 3", "Option 4"]
+                        size_hint_y: None
+                        height: dp(25)
+                        font_name: 'Roboto'
+                        font_size: sp(12)
+                        padding: dp(5), 0, dp(5), 0
+                        option_cls: "DropDownItemList"
+            Spacer:
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(25)
+                Label:
+                    text: 'Resolution :'
+                    color: (1,1,1,1)
+                    font_name: 'Roboto'
+                    font_size: sp(12)
+                    valign: 'middle'
+                    halign: 'left'
+                    size_hint_x: None
+                    width: lbl_orienation.texture_size[0]
+                    padding: 0, 0, dp(5), 0
+                Spinner:
+                    id: drp_resolution
+                    background_normal: ""
+                    background_color: 0.7882, 0.7882, 0.7882, 1
+                    color: (0, 0, 0, 1)
+                    text: "Select an option"
+                    text_size: self.size
+                    halign: "left"
+                    valign: "middle"
+                    values: ["Select an option","Option 1", "Option 2", "Option 3", "Option 4"]
+                    size_hint_y: None
+                    height: dp(25)
+                    font_name: 'Roboto'
+                    font_size: sp(12)
+                    padding: dp(5), 0, dp(5), 0
+                    option_cls: "DropDownItemList"
+            Spacer:
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(25)
+                Label:
+                    id: lbl_orienation
+                    text: 'Orientation :'
+                    color: (1,1,1,1)
+                    font_name: 'Roboto'
+                    font_size: sp(12)
+                    valign: 'middle'
+                    halign: 'left'
+                    size_hint_x: None
+                    width: self.texture_size[0]
+                    padding: 0, 0, dp(5), 0
+                Spinner:
+                    id: drp_orientation
+                    background_normal: ""
+                    background_color: 0.7882, 0.7882, 0.7882, 1
+                    color: (0, 0, 0, 1)
+                    text: "Select an option"
+                    text_size: self.size
+                    halign: "left"
+                    valign: "middle"
+                    values: ["Select an option","Option 1", "Option 2", "Option 3", "Option 4"]
+                    size_hint_y: None
+                    height: dp(25)
+                    font_name: 'Roboto'
+                    font_size: sp(12)
+                    padding: dp(5), 0, dp(5), 0
+                    option_cls: "DropDownItemList"
+            Spacer:
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(18)
+                Label:
+                    text: 'Brightness :'
+                    color: (1,1,1,1)
+                    font_name: 'Roboto'
+                    font_size: sp(12)
+                    valign: 'middle'
+                    halign: 'left'
+                    size_hint_x: None
+                    width: lbl_orienation.texture_size[0]
+                    padding: 0, 0, dp(5), 0
+                BoxLayout:
+                    orientation: 'horizontal'
+                    padding: dp(5), 0, dp(5), 0
+                    canvas.before:
+                        Color: 
+                            rgba: (0.7882, 0.7882, 0.7882, 1)
+                        RoundedRectangle:
+                            size: self.size
+                            pos: self.pos
+                            radius: [4]
+                    Slider:
+                        id: sldr_brightness
+                        min: 0
+                        max: 256
+                        step: 1
+                        value:128
+                        orientation: 'horizontal'
+                        background_width: 0
+                        cursor_size: [15, 15]
+                        canvas.before:
+                            Color:
+                                rgba: (0.0510, 0.5922, 0.7412, 1)
+                            Rectangle:
+                                pos: self.x, self.center_y - 2
+                                size: self.width, 4
+                        canvas.after:
+                            Color:
+                                rgba: 1, 0, 0, 1
+                            Rectangle:
+                                pos: self.value_pos[0] - self.cursor_size[0] / 2, self.center_y - self.cursor_size[1] / 2
+                                size: self.cursor_size
+                    Label:
+                        text: str(int(sldr_brightness.value))
+                        color: (0, 0, 0, 1)
+                        font_name: 'Roboto'
+                        font_size: sp(12)
+                        valign: 'middle'
+                        halign: 'left'
+                        size_hint_x: None
+                        width: self.texture_size[0]
+            Spacer:
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(18)
+                Label:
+                    text: 'Contrast :'
+                    color: (1,1,1,1)
+                    font_name: 'Roboto'
+                    font_size: sp(12)
+                    halign: 'left'
+                    valign: 'middle'
+                    size_hint_x: None
+                    width: lbl_orienation.texture_size[0]
+                    padding: 0, 0, dp(15), 0
+                BoxLayout:
+                    orientation: 'horizontal'
+                    padding: dp(5), 0, dp(5), 0
+                    canvas.before:
+                        Color: 
+                            rgba: (0.7882, 0.7882, 0.7882, 1)
+                        RoundedRectangle:
+                            size: self.size
+                            pos: self.pos
+                            radius: [4]
+                    Slider:
+                        id: sldr_contrast
+                        min: 0
+                        max: 256
+                        step: 1
+                        value:128
+                        orientation: 'horizontal'
+                        background_width: 0
+                        cursor_size: [15, 15]
+                        canvas.before:
+                            Color:
+                                rgba: (0.0510, 0.5922, 0.7412, 1)
+                            Rectangle:
+                                pos: self.x, self.center_y - 2
+                                size: self.width, 4
+                        canvas.after:
+                            Color:
+                                rgba: 1, 0, 0, 1
+                            Rectangle:
+                                pos: self.value_pos[0] - self.cursor_size[0] / 2, self.center_y - self.cursor_size[1] / 2
+                                size: self.cursor_size
+                    Label:
+                        text: str(int(sldr_contrast.value))
+                        color: (0, 0, 0, 1)
+                        font_name: 'Roboto'
+                        font_size: sp(12)
+                        valign: 'middle'
+                        halign: 'left'
+                        size_hint_x: None
+                        width: self.texture_size[0]
+            
+        Widget:
+            size_hint_y: 1

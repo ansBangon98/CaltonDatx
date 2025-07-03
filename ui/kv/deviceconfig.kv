@@ -121,11 +121,11 @@
 <DeviceConfig>:
     BoxLayout:
         orientation: 'vertical'
-        #Title Header Design
-        BoxLayout:
+        BoxLayout: #HEADER
             orientation: 'horizontal'
+            padding: dp(10), 0, dp(10), 0
             size_hint_y: None
-            height: 47
+            height: dp(45)
             canvas.before:
                 Color:
                     rgba: (0.2157, 0.1294, 0.3137, 1)
@@ -136,31 +136,27 @@
                 source: ("./assets/deviceconfig/calton_logo_people.png")
                 fit_mode: 'scale-down'
                 size_hint_x: None
-                width: 100
+                width: dp(100)
             Widget:
             BoxLayout:
                 orientation: 'vertical'
-                size_hint_x: None
-                width: 140
-                padding: (0, 0, 10, 0)
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_x: None
-                    width: self.parent.width
-                    AutoResizeLabel:
-                        pos_hint: {'right': 1}
-                        text: 'Version: 2.0.0.1'
-                        color :(1, 1, 1, 1)
-                        font_size : 14
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_x: None
-                    width: self.parent.width
-                    AutoResizeLabel:
-                        pos_hint: {'right': 1}
-                        text: 'Device: DHS83HDS4D'
-                        color: (1, 1, 1, 1)
-                        font_size : 14
+                padding: 0, dp(5), 0, dp(5)
+                Label:
+                    text: 'Version: 3.0.0.1'
+                    color: (1, 1, 1, 1)
+                    font_name: 'Roboto'
+                    font_size: sp(14)
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+                Label:
+                    text: 'Device: 18KO091HYU'
+                    color: (1, 1, 1, 1)
+                    font_name: 'Roboto'
+                    font_size: sp(14)
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
         #Content Layout
         BoxLayout:
             orientation: 'vertical'
@@ -217,6 +213,7 @@
                                 pos: self.parent.parent.width-32, self.parent.top+2
                                 # pos: self.parent.width - 10, 10
                                 source: ("./assets/deviceconfig/capture.png")
+                                on_press: root._on_click_capture()
                     BoxLayout:
                         orientation: 'vertical'
                         size_hint_x: None
@@ -381,6 +378,7 @@
                                                     font_size: 12
                                                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                                                     option_cls: "DropDownItemList"
+                                                    on_text: root._camera_selected_changed()
                                                 FloatLayout:
                                                     Image:
                                                         source: ("./assets/deviceconfig/down.png")
@@ -459,7 +457,7 @@
                                             text_size: self.width, None
                                             halign: "left"
                                             valign: "middle"
-                                            values: ["Select an option","Option 1", "Option 2", "Option 3", "Option 4"]
+                                            values: ["Select an option","0 degrees", "90 degrees", "180 degrees", "270 degrees", "360 degrees"]
                                             size_hint: None, None
                                             size: 275, 28
                                             font_size: 12
